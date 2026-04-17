@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Відстеження рейсу #{{ deal.id }}{% endblock %}
+
+{% block head_extra %}
+<!-- Leaflet.js — open-source map, no API key needed -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/pHSY=" crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4">
+
+  <!-- Header -->
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <div class="flex items-center gap-2 text-sm text-slate-500 mb-1">
+        <a href="/loads/my" class="hover:text-amber-600">← Мої вантажі</a>
+        <span>/</span>
+        <span>Рейс #{{ deal.id }}</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">
+        {{ deal.load.from_city or deal.load.from_country }}
+        →
+        {{ deal.load.to_city or deal.load.to_country }}
+      </h1>
+      <p class="text-slate-500 text-sm mt-1">
+        {{ deal.load.cargo_name or 'Вантаж' }}
+        {% if deal.load.weight_tons %} · {{ deal.load.weight_tons }} т{% endif %}
+      </p>
+    </div>
+
+    <!-- Status badge -->
+    <div>
+      {% set s = deal.status %}
+      {% if s == 'booked' %}
+        <span class="bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1.5 rounded-full">
+          📋 Заброньовано
+        </span>
+      {% elif s == 'loaded' %}
+        <span class="bg-amber-100 text-amber-700 text-sm font-semibold px-3 py-1.5 rounded-full">
+          📦 Завантажено
+        </span>
+      {% elif s == 'in_transit' %}
+        <span class="bg-emerald-100 text-emerald-700 text-sm font-semibold px-3 py-1.5 rounded-full animate-pulse">
+          🚛 В дорозі
+        </span>
+      {% elif s == 'delivered' %}
+        <span class="bg-slate-100 text-slate-600 text-sm font-semibold px-3 py-1.5 rounded-full">
+          ✅ Доставлено
+        </span>
+      {% else %}
+        <span class="bg-slate-100 text-slate-600 text-sm font-semibold px-3 py-1.5 rounded-full">
+          {{ s }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Map (2/3 width on large) -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <div id="map" class="w-full" style="height: 420px; z-index: 0;">
+          {% if not position %}
+          <div class="flex items-center justify-center h-full bg-slate-50 text-slate-400 text-sm">
+            GPS-сигнал ще не отримано
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if deal.status in ('loaded', 'in_transit') %}
+      <!-- Live position card — auto-refreshes every 30 s via HTMX -->
+      <div id="position-card"
+           hx-get="/track/{{ deal.id }}/position"
+           hx-trigger="every 30s"
+           hx-target="#position-card"
+           hx-swap="outerHTML"
+           class="mt-4">
+        {% include "tracking/_position_card.html" %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar (1/3) -->
+    <div class="space-y-4">
+
+      <!-- Route card -->
+      <div class="bg-white rounded-xl border shadow-sm p-5">
+        <h3 class="font-semibold text-slate-700 text-sm mb-3">Маршрут</h3>
+        <div class="space-y-3">
+          <div class="flex gap-3 items-start">
+            <div class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-sm flex-shrink-0">
+              📍
+            </div>
+            <div>
+              <p class="text-xs text-slate-400">Завантаження</p>
+              <p class="text-sm font-medium text-slate-700">
+                {{ deal.load.from_city or '—' }}{% if deal.load.from_country %}, {{ deal.load.from_country }}{% endif %}
+              </p>
+            </div>
+          </div>
+          <div class="border-l-2 border-dashed border-slate-200 ml-3.5 h-4"></div>
+          <div class="flex gap-3 items-start">
+            <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center text-sm flex-shrink-0">
+              🏁
+            </div>
+            <div>
+              <p class="text-xs text-slate-400">Вивантаження</p>
+              <p class="text-sm font-medium text-slate-700">
+                {{ deal.load.to_city or '—' }}{% if deal.load.to_country %}, {{ deal.load.to_country }}{% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deal info -->
+      <div class="bg-white rounded-xl border shadow-sm p-5">
+        <h3 class="font-semibold text-slate-700 text-sm mb-3">Деталі угоди</h3>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-slate-400">Угода №</dt>
+            <dd class="font-medium text-slate-700">#{{ deal.id }}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-slate-400">Вартість</dt>
+            <dd class="font-medium text-slate-700">
+              {{ deal.price_amount }} {{ deal.price_currency }}
+            </dd>
+          </div>
+          {% if deal.load.pickup_date_from %}
+          <div class="flex justify-between">
+            <dt class="text-slate-400">Дата відправки</dt>
+            <dd class="font-medium text-slate-700">
+              {{ deal.load.pickup_date_from.strftime('%d.%m.%Y') }}
+            </dd>
+          </div>
+          {% endif %}
+        </dl>
+      </div>
+
+      <!-- Access note -->
+      {% if deal.status == 'delivered' %}
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
+        ℹ️ Вантаж доставлено. Відстеження місцезнаходження транспортного засобу завершено.
+      </div>
+      {% elif deal.status == 'booked' %}
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
+        ℹ️ Відстеження активується після завантаження вантажу на транспорт.
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if position %}
+<script>
+(function() {
+  const lat = {{ position.lat }};
+  const lon = {{ position.lon }};
+  const map = L.map('map').setView([lat, lon], 10);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // Truck marker
+  const truckIcon = L.divIcon({
+    className: '',
+    html: '<div style="font-size:28px;line-height:1;">🚛</div>',
+    iconAnchor: [14, 14],
+  });
+
+  L.marker([lat, lon], { icon: truckIcon })
+    .addTo(map)
+    .bindPopup('<b>{{ deal.vehicle.body_type or "Транспорт" }}</b><br>{{ position.address or "" }}<br>{{ position.speed_kmh or 0 }} км/год')
+    .openPopup();
+
+  // Pickup marker
+  {% if deal.load.from_lat and deal.load.from_lon %}
+  L.circle([{{ deal.load.from_lat }}, {{ deal.load.from_lon }}], {
+    color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2, radius: 3000
+  }).addTo(map).bindPopup('📍 {{ deal.load.from_city or "Завантаження" }}');
+  {% endif %}
+
+  // Delivery marker
+  {% if deal.load.to_lat and deal.load.to_lon %}
+  L.circle([{{ deal.load.to_lat }}, {{ deal.load.to_lon }}], {
+    color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.2, radius: 3000
+  }).addTo(map).bindPopup('🏁 {{ deal.load.to_city or "Вивантаження" }}');
+  {% endif %}
+})();
+</script>
+{% endif %}
+{% endblock %}

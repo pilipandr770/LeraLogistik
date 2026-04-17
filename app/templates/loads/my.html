@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Мої вантажі — TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Мої вантажі</h1>
+    <a href="/loads/new"
+       class="bg-amber-500 hover:bg-amber-600 text-white font-semibold
+              rounded-xl px-5 py-2.5 text-sm transition-colors">
+      + Додати вантаж
+    </a>
+  </div>
+
+  {% if not loads %}
+  <div class="bg-white rounded-xl border p-12 text-center shadow-sm">
+    <p class="text-4xl mb-3">📦</p>
+    <p class="text-slate-500 mb-5">У вас ще немає опублікованих вантажів</p>
+    <a href="/loads/new"
+       class="inline-block bg-amber-500 hover:bg-amber-600 text-white font-semibold
+              rounded-xl px-6 py-3 text-sm transition-colors">
+      Опублікувати перший вантаж →
+    </a>
+  </div>
+  {% else %}
+  <div class="space-y-3">
+    {% for load in loads %}
+    <div class="bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-5">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-slate-800">{{ load.cargo_name or '—' }}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium
+              {% if load.status == 'new' %}bg-blue-100 text-blue-700
+              {% elif load.status == 'matched' %}bg-amber-100 text-amber-700
+              {% elif load.status == 'negotiating' %}bg-purple-100 text-purple-700
+              {% elif load.status == 'booked' %}bg-emerald-100 text-emerald-700
+              {% elif load.status == 'cancelled' %}bg-slate-100 text-slate-500
+              {% else %}bg-slate-100 text-slate-600{% endif %}">
+              {% if load.status == 'new' %}🔵 Нова
+              {% elif load.status == 'matched' %}🤖 Знайдено транспорт
+              {% elif load.status == 'negotiating' %}💬 Переговори
+              {% elif load.status == 'booked' %}✅ Заброньовано
+              {% elif load.status == 'cancelled' %}❌ Скасовано
+              {% else %}{{ load.status }}{% endif %}
+            </span>
+          </div>
+          <p class="text-sm text-slate-600">
+            📍 {{ load.from_city }}, {{ load.from_country }}
+            → {{ load.to_city }}, {{ load.to_country }}
+          </p>
+          <div class="flex flex-wrap gap-3 mt-2 text-xs text-slate-500">
+            {% if load.weight_tons %}<span>⚖️ {{ load.weight_tons }} т</span>{% endif %}
+            {% if load.volume_m3 %}<span>📦 {{ load.volume_m3 }} м³</span>{% endif %}
+            {% if load.price_amount %}<span>💰 {{ load.price_amount }} {{ load.price_currency }}</span>{% endif %}
+            {% if load.pickup_date_from %}<span>📅 {{ load.pickup_date_from.strftime('%d.%m.%Y') }}</span>{% endif %}
+            {% if load.is_adr %}<span class="text-red-600 font-medium">⚠️ ADR</span>{% endif %}
+          </div>
+        </div>
+        <div class="flex items-center gap-2 ml-4">
+          {% if load.status == 'booked' %}
+          <a href="/deals"
+             class="text-xs bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded-lg hover:bg-emerald-200">
+            🤝 Угода
+          </a>
+          {% else %}
+          <a href="/ops/loads/{{ load.id }}"
+             class="text-xs text-amber-600 hover:underline">Деталі</a>
+          {% endif %}
+          {% if load.status not in ('booked', 'cancelled') %}
+          <form method="POST" action="/loads/{{ load.id }}/cancel"
+                onsubmit="return confirm('Скасувати цей вантаж?')">
+            <button type="submit"
+                    class="text-xs text-red-500 hover:text-red-700">Скасувати</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

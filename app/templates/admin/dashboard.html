@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Адмін — Платформа TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-8 px-4">
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Адмін-панель</h1>
+      <p class="text-slate-500 text-sm">Повний огляд платформи</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/admin/users" class="bg-white border rounded-lg px-4 py-2 text-sm hover:border-amber-400 hover:text-amber-600">
+        Користувачі
+      </a>
+      <a href="/admin/companies" class="bg-white border rounded-lg px-4 py-2 text-sm hover:border-amber-400 hover:text-amber-600">
+        Компанії
+      </a>
+      <a href="/dashboard" class="bg-white border rounded-lg px-4 py-2 text-sm hover:border-amber-400 hover:text-amber-600">
+        AI Матчер
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    {% set kpis = [
+      ('👥', 'Користувачів', total_users, None),
+      ('🏢', 'Компаній', total_companies, verified_companies ~ ' верифіковано'),
+      ('🚛', 'Угод активних', active_deals, total_deals ~ ' всього'),
+      ('🤖', 'AI-матчів', matches_pending, 'очікують розгляду'),
+    ] %}
+    {% for icon, label, value, sub in kpis %}
+    <div class="bg-white rounded-xl border shadow-sm p-5">
+      <div class="text-2xl mb-1">{{ icon }}</div>
+      <div class="text-3xl font-bold text-slate-800">{{ value }}</div>
+      <div class="text-sm text-slate-500 mt-0.5">{{ label }}</div>
+      {% if sub %}
+      <div class="text-xs text-slate-400 mt-1">{{ sub }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Users by role + Loads by status -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- Users by role -->
+    <div class="bg-white rounded-xl border shadow-sm p-6">
+      <h2 class="font-semibold text-slate-700 mb-4">Користувачі за роллю</h2>
+      <div class="space-y-3">
+        {% set role_data = [
+          ('🛒', 'Вантажовідправники', users_by_role.shipper or 0),
+          ('🚛', 'Перевізники',        users_by_role.carrier or 0),
+          ('🔀', 'Експедитори',        users_by_role.forwarder or 0),
+        ] %}
+        {% for icon, label, count in role_data %}
+        {% set pct = ((count / total_users * 100) if total_users else 0)|round|int %}
+        <div>
+          <div class="flex items-center justify-between text-sm mb-1">
+            <span>{{ icon }} {{ label }}</span>
+            <span class="font-semibold text-slate-700">{{ count }}</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2">
+            <div class="bg-amber-400 h-2 rounded-full" style="width: {{ pct }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Loads by status -->
+    <div class="bg-white rounded-xl border shadow-sm p-6">
+      <h2 class="font-semibold text-slate-700 mb-4">Вантажі за статусом</h2>
+      <div class="space-y-2">
+        {% set statuses = [
+          ('new',         '🆕', 'Нові',               'bg-slate-400'),
+          ('matched',     '🎯', 'Зматчені',            'bg-amber-400'),
+          ('negotiating', '💬', 'Переговори',          'bg-blue-400'),
+          ('booked',      '✅', 'Замовлені',           'bg-emerald-500'),
+        ] %}
+        {% for status, icon, label, color in statuses %}
+        {% set count = loads_by_status[status] or 0 %}
+        <div class="flex items-center justify-between text-sm">
+          <span class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full {{ color }} inline-block"></span>
+            {{ icon }} {{ label }}
+          </span>
+          <span class="font-semibold text-slate-700">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Active deals (trucks on the road right now) -->
+  {% if active_deals_list %}
+  <div class="bg-white rounded-xl border shadow-sm mb-8">
+    <div class="px-6 py-4 border-b flex items-center justify-between">
+      <h2 class="font-semibold text-slate-700">🚛 Активні рейси (зараз в дорозі)</h2>
+      <span class="text-sm text-slate-400">{{ active_deals_list|length }} рейсів</span>
+    </div>
+    <div class="divide-y">
+      {% for deal in active_deals_list %}
+      <div class="px-6 py-3 flex items-center justify-between text-sm hover:bg-slate-50">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-slate-400 text-xs">#{{ deal.id }}</span>
+          <span class="font-medium text-slate-700">
+            Угода · {{ deal.price_amount }} {{ deal.price_currency }}
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          {% if deal.status == 'in_transit' %}
+          <span class="bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full animate-pulse">
+            В дорозі
+          </span>
+          {% else %}
+          <span class="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+            Завантажено
+          </span>
+          {% endif %}
+          <a href="/track/{{ deal.id }}"
+             class="text-amber-600 hover:underline text-xs">
+            Відстежити →
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Bottom row: Recent registrations + Recent loads side by side -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Recent registrations -->
+    <div class="bg-white rounded-xl border shadow-sm">
+      <div class="px-6 py-4 border-b">
+        <h2 class="font-semibold text-slate-700">Нові реєстрації</h2>
+      </div>
+      <div class="divide-y">
+        {% for user in recent_users %}
+        <div class="px-6 py-3 flex items-center justify-between text-sm">
+          <div>
+            <p class="font-medium text-slate-700">{{ user.email }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">
+              {{ user.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </p>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full
+            {% if user.role == 'shipper' %}bg-blue-100 text-blue-700
+            {% elif user.role == 'carrier' %}bg-emerald-100 text-emerald-700
+            {% elif user.role == 'forwarder' %}bg-purple-100 text-purple-700
+            {% else %}bg-slate-100 text-slate-600{% endif %}">
+            {% if user.role == 'shipper' %}🛒 Відправник
+            {% elif user.role == 'carrier' %}🚛 Перевізник
+            {% elif user.role == 'forwarder' %}🔀 Експедитор
+            {% else %}{{ user.role }}{% endif %}
+          </span>
+        </div>
+        {% else %}
+        <div class="px-6 py-10 text-center text-slate-400 text-sm">Немає користувачів</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent loads -->
+    <div class="bg-white rounded-xl border shadow-sm">
+      <div class="px-6 py-4 border-b">
+        <h2 class="font-semibold text-slate-700">Останні вантажі</h2>
+      </div>
+      <div class="divide-y">
+        {% for load in recent_loads %}
+        <div class="px-6 py-3 text-sm">
+          <div class="flex items-center justify-between">
+            <p class="font-medium text-slate-700">
+              {{ load.from_city or load.from_country or '?' }}
+              → {{ load.to_city or load.to_country or '?' }}
+            </p>
+            <span class="text-xs px-2 py-0.5 rounded-full
+              {% if load.status == 'new' %}bg-slate-100 text-slate-600
+              {% elif load.status == 'matched' %}bg-amber-100 text-amber-700
+              {% elif load.status == 'booked' %}bg-emerald-100 text-emerald-700
+              {% else %}bg-blue-100 text-blue-700{% endif %}">
+              {{ load.status }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            {{ load.cargo_name or '—' }}
+            {% if load.weight_tons %} · {{ load.weight_tons }} т{% endif %}
+            · {{ load.created_at.strftime('%d.%m.%Y') }}
+          </p>
+        </div>
+        {% else %}
+        <div class="px-6 py-10 text-center text-slate-400 text-sm">Немає вантажів</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

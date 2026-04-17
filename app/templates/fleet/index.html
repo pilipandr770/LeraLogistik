@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Мій автопарк · TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+  {# ── Header ─────────────────────────────────────────────────────────── #}
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">🚛 Мій автопарк</h1>
+      <p class="text-sm text-slate-500 mt-1">Керуйте своїми вантажівками і GPS-трекерами</p>
+    </div>
+    <a href="/fleet/new"
+       class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600
+              text-white font-semibold px-4 py-2 rounded-xl transition-colors text-sm">
+      + Додати автомобіль
+    </a>
+  </div>
+
+  {# ── Traccar status banner ───────────────────────────────────────────── #}
+  {% if not traccar_configured %}
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-800">
+    <strong>GPS-трекінг не налаштовано.</strong>
+    Щоб увімкнути GPS — попросіть адміністратора встановити змінну
+    <code class="font-mono bg-amber-100 px-1 rounded">TRACCAR_ADMIN_PASSWORD</code> у
+    налаштуваннях сервера.
+  </div>
+  {% endif %}
+
+  {# ── Empty state ─────────────────────────────────────────────────────── #}
+  {% if not vehicles %}
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center">
+    <div class="text-5xl mb-4">🚚</div>
+    <p class="text-slate-500 mb-4">У вас ще немає автомобілів у системі.</p>
+    <a href="/fleet/new"
+       class="inline-block bg-amber-500 hover:bg-amber-600 text-white
+              font-semibold px-6 py-2 rounded-xl transition-colors">
+      Додати перший автомобіль
+    </a>
+  </div>
+
+  {% else %}
+  {# ── Vehicle cards ───────────────────────────────────────────────────── #}
+  <div class="grid gap-4">
+    {% for v in vehicles %}
+    {% set pos = positions.get(v.id) %}
+    {% set plate = (v.raw_payload or {}).get('plate', '—') %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+      <div class="flex items-start justify-between gap-4">
+
+        {# Left: Vehicle info #}
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center
+                      text-2xl shrink-0">
+            🚛
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-slate-900 text-lg">{{ plate }}</p>
+            <p class="text-sm text-slate-500">
+              {{ v.body_type or '—' }}
+              {% if v.capacity_tons %} · {{ v.capacity_tons }} т{% endif %}
+            </p>
+          </div>
+        </div>
+
+        {# Right: GPS badge + actions #}
+        <div class="flex items-center gap-3 shrink-0">
+          {% if v.traccar_device_id %}
+            {% if pos %}
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium
+                         bg-green-50 text-green-700 border border-green-200
+                         px-2.5 py-1 rounded-full">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              GPS активний
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium
+                         bg-slate-100 text-slate-500 border border-slate-200
+                         px-2.5 py-1 rounded-full">
+              GPS очікує даних
+            </span>
+            {% endif %}
+          {% else %}
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium
+                         bg-orange-50 text-orange-600 border border-orange-200
+                         px-2.5 py-1 rounded-full">
+              GPS не прив'язано
+            </span>
+          {% endif %}
+
+          {# Delete button #}
+          <form method="POST" action="/fleet/{{ v.id }}/delete"
+                onsubmit="return confirm('Видалити автомобіль {{ plate }}?')">
+            <button type="submit"
+                    class="text-slate-400 hover:text-red-500 transition-colors p-1.5 rounded-lg
+                           hover:bg-red-50" title="Видалити">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858
+                         L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {# GPS details row #}
+      {% if v.traccar_device_id %}
+      <div class="mt-4 pt-4 border-t border-slate-100">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <div>
+            <p class="text-xs text-slate-400 uppercase tracking-wide">IMEI / ID</p>
+            <p class="font-mono text-slate-700 mt-0.5">{{ v.traccar_unique_id or '—' }}</p>
+          </div>
+          {% if pos %}
+          <div>
+            <p class="text-xs text-slate-400 uppercase tracking-wide">Координати</p>
+            <p class="text-slate-700 mt-0.5">{{ "%.4f"|format(pos.lat|float) }},
+              {{ "%.4f"|format(pos.lon|float) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 uppercase tracking-wide">Швидкість</p>
+            <p class="text-slate-700 mt-0.5">{{ pos.speed_kmh or 0 }} км/год</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 uppercase tracking-wide">Остання позиція</p>
+            <p class="text-slate-700 mt-0.5">{{ pos.recorded_at.strftime('%d.%m %H:%M') }}</p>
+          </div>
+          {% else %}
+          <div class="col-span-3 text-slate-400 text-xs italic mt-0.5">
+            Позиція ще не отримана. Переконайтеся, що Traccar Client або трекер
+            відправляє дані на сервер.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% else %}
+      {# Link Traccar form (inline expansion via Alpine) #}
+      {% if traccar_configured %}
+      <div class="mt-4 pt-4 border-t border-slate-100" x-data="{ open: false }">
+        <button @click="open = !open"
+                class="text-sm text-amber-600 hover:text-amber-700 font-medium">
+          + Прив'язати GPS-трекер
+        </button>
+        <form x-show="open" x-cloak method="POST" action="/fleet/{{ v.id }}/link"
+              class="mt-3 flex items-end gap-3">
+          <div class="flex-1">
+            <label class="block text-xs text-slate-500 mb-1">
+              IMEI трекера або ID телефону (Traccar Client)
+            </label>
+            <input type="text" name="traccar_unique_id" required
+                   placeholder="напр. 359123456789000"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-amber-400">
+          </div>
+          <button type="submit"
+                  class="bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                         px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap">
+            Зберегти
+          </button>
+        </form>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Traccar Client setup instructions ──────────────────────────────── #}
+  {% if traccar_configured %}
+  <div class="mt-8 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <h2 class="font-bold text-slate-900 mb-3">📱 Як підключити смартфон водія</h2>
+    <ol class="list-decimal list-inside space-y-2 text-sm text-slate-700">
+      <li>Завантажте <strong>Traccar Client</strong> з
+          <a href="https://play.google.com/store/apps/details?id=org.traccar.client"
+             target="_blank" rel="noopener noreferrer"
+             class="text-amber-600 underline">Google Play</a>
+          або
+          <a href="https://apps.apple.com/app/traccar-client/id843156974"
+             target="_blank" rel="noopener noreferrer"
+             class="text-amber-600 underline">App Store</a>.
+      </li>
+      <li>Відкрийте застосунок → натисніть <em>Параметри</em>.</li>
+      <li>Вкажіть адресу сервера: <code class="font-mono bg-slate-100 px-1 rounded">{{ traccar_base_url }}</code></li>
+      <li>Порт: <code class="font-mono bg-slate-100 px-1 rounded">5055</code></li>
+      <li>Запишіть <strong>Device identifier</strong> (автоматично генерується)
+          і вкажіть його в полі «ID телефону» при прив'язці автомобіля вище.</li>
+      <li>Натисніть перемикач <em>Service status</em> &rarr; GPS почне відправлятися.</li>
+    </ol>
+    <p class="text-xs text-slate-400 mt-4">
+      Для апаратних трекерів (Teltonika FMB, Gosafe, GT06 тощо) — порт залежить від
+      протоколу. Зверніться до адміністратора за таблицею портів.
+    </p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

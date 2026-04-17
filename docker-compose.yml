@@ -1,0 +1,85 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lera_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lera
+      POSTGRES_PASSWORD: lera
+      POSTGRES_DB: lera
+    ports:
+      - "5432:5432"
+    volumes:
+      - lera_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lera -d lera"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Traccar — open-source GPS tracking server (Apache 2.0) ──────────────
+  # Docs:    https://www.traccar.org/documentation/
+  # Devices: 200+ GPS protocols, 2000+ tracker models
+  # Mobile:  Traccar Client app (Android/iOS) — free, no hardware needed
+  #
+  # REST API available at http://localhost:8082/api
+  # Admin UI available at http://localhost:8082
+  #
+  # Default credentials (change immediately after first run!):
+  #   login: admin   password: admin
+  traccar:
+    image: traccar/traccar:latest
+    container_name: trucklink_traccar
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Use our Postgres instead of Traccar's embedded H2 database
+      - CONFIG_USE_ENVIRONMENT_VARIABLES=true
+      - DATABASE_DRIVER=org.postgresql.Driver
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/traccar
+      - DATABASE_USER=lera
+      - DATABASE_PASSWORD=lera
+    ports:
+      - "8082:8082"   # Web UI + REST API
+      # GPS device protocol ports (add more as needed)
+      - "5001:5001"   # GT06 / Concox (very common cheap trackers)
+      - "5006:5006"   # TK103
+      - "5013:5013"   # Queclink GV series
+      - "5023:5023"   # Teltonika FMB (most popular in Ukraine/EU)
+      - "5055:5055"   # OsmAnd (for phone-based tracking)
+      - "5093:5093"   # Traccar Client (official mobile app)
+    volumes:
+      - traccar_data:/opt/traccar/data
+      - traccar_logs:/opt/traccar/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/api/server || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Our FastAPI app (for local full-stack dev) ───────────────────────────
+  # Uncomment when you want to run the full stack with docker compose up
+  # app:
+  #   build: .
+  #   container_name: trucklink_app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     traccar:
+  #       condition: service_healthy
+  #   environment:
+  #     DATABASE_URL: postgresql+asyncpg://lera:lera@postgres:5432/lera
+  #     TRACCAR_BASE_URL: http://traccar:8082
+  #     TRACCAR_ADMIN_EMAIL: admin@trucklink.ua
+  #     TRACCAR_ADMIN_PASSWORD: change-me
+  #   ports:
+  #     - "8000:8000"
+
+volumes:
+  lera_pgdata:
+  traccar_data:
+  traccar_logs:

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Угода #{{ deal.id }} — TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-8 px-4">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm text-slate-500 mb-5">
+    <a href="/deals" class="hover:text-amber-600">← Угоди</a>
+    <span>/</span>
+    <span>Угода #{{ deal.id }}</span>
+  </div>
+
+  <!-- Header -->
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Угода #{{ deal.id }}</h1>
+      <p class="text-slate-500 text-sm">{{ deal.created_at.strftime('%d.%m.%Y о %H:%M') }}</p>
+    </div>
+
+    {% set s = deal.status %}
+    <span class="text-sm px-3 py-1.5 rounded-full font-semibold
+      {% if s == 'booked' %}bg-blue-100 text-blue-700
+      {% elif s == 'loaded' %}bg-amber-100 text-amber-700
+      {% elif s == 'in_transit' %}bg-emerald-100 text-emerald-700
+      {% elif s == 'delivered' %}bg-slate-100 text-slate-600
+      {% elif s == 'invoiced' %}bg-purple-100 text-purple-700
+      {% elif s == 'paid' %}bg-green-100 text-green-700
+      {% elif s == 'cancelled' %}bg-red-100 text-red-500
+      {% else %}bg-slate-100 text-slate-600{% endif %}">
+      {% if s == 'booked' %}📋 Заброньовано
+      {% elif s == 'loaded' %}📦 Завантажено
+      {% elif s == 'in_transit' %}🚛 В дорозі
+      {% elif s == 'delivered' %}✅ Доставлено
+      {% elif s == 'invoiced' %}🧾 Рахунок виставлено
+      {% elif s == 'paid' %}💚 Оплачено
+      {% elif s == 'cancelled' %}❌ Скасовано
+      {% else %}{{ s }}{% endif %}
+    </span>
+  </div>
+
+  <!-- Status timeline -->
+  {% set all_stages = [
+    ('booked',     '📋', 'Заброньовано'),
+    ('loaded',     '📦', 'Завантажено'),
+    ('in_transit', '🚛', 'В дорозі'),
+    ('delivered',  '✅', 'Доставлено'),
+    ('invoiced',   '🧾', 'Виставлено рахунок'),
+    ('paid',       '💚', 'Оплачено'),
+  ] %}
+  {% set stage_order = ['booked','loaded','in_transit','delivered','invoiced','paid'] %}
+  {% set current_idx = stage_order.index(deal.status) if deal.status in stage_order else -1 %}
+
+  {% if deal.status != 'cancelled' %}
+  <div class="bg-white rounded-xl border shadow-sm p-5 mb-6">
+    <div class="flex items-center justify-between gap-1">
+      {% for stage_key, icon, label in all_stages %}
+      {% set idx = loop.index0 %}
+      <div class="flex-1 flex flex-col items-center text-center">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm mb-1
+          {% if idx < current_idx %}bg-emerald-500 text-white
+          {% elif idx == current_idx %}bg-amber-400 text-white font-bold
+          {% else %}bg-slate-100 text-slate-400{% endif %}">
+          {% if idx < current_idx %}✓{% else %}{{ icon }}{% endif %}
+        </div>
+        <span class="text-xs
+          {% if idx <= current_idx %}text-slate-700 font-medium{% else %}text-slate-400{% endif %}
+          hidden sm:block">{{ label }}</span>
+      </div>
+      {% if not loop.last %}
+      <div class="h-0.5 flex-none w-4
+        {% if loop.index0 < current_idx %}bg-emerald-400{% else %}bg-slate-200{% endif %}">
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tracking CTA -->
+  {% if can_track %}
+  <a href="/track/{{ deal.id }}"
+     class="block bg-emerald-50 border border-emerald-300 rounded-xl p-4 mb-6
+            hover:bg-emerald-100 transition-colors text-center">
+    <span class="text-emerald-700 font-semibold">🗺 Відстежити вантаж на карті →</span>
+  </a>
+  {% endif %}
+
+  <!-- Main info grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+    <!-- Load card -->
+    <div class="bg-white rounded-xl border shadow-sm p-5">
+      <h3 class="font-semibold text-slate-700 text-sm mb-3">📦 Вантаж</h3>
+      {% if deal.load %}
+      <dl class="space-y-1.5 text-sm">
+        <div><dt class="text-slate-400 text-xs">Маршрут</dt>
+          <dd class="font-medium text-slate-700">
+            {{ deal.load.from_city or deal.load.from_country or '?' }}
+            → {{ deal.load.to_city or deal.load.to_country or '?' }}
+          </dd></div>
+        <div><dt class="text-slate-400 text-xs">Вантаж</dt>
+          <dd>{{ deal.load.cargo_name or '—' }}</dd></div>
+        {% if deal.load.weight_tons %}
+        <div><dt class="text-slate-400 text-xs">Вага</dt>
+          <dd>{{ deal.load.weight_tons }} т</dd></div>
+        {% endif %}
+        {% if deal.load.pickup_date_from %}
+        <div><dt class="text-slate-400 text-xs">Дата відправки</dt>
+          <dd>{{ deal.load.pickup_date_from.strftime('%d.%m.%Y') }}</dd></div>
+        {% endif %}
+      </dl>
+      {% else %}
+      <p class="text-sm text-slate-400">—</p>
+      {% endif %}
+    </div>
+
+    <!-- Carrier/vehicle card -->
+    <div class="bg-white rounded-xl border shadow-sm p-5">
+      <h3 class="font-semibold text-slate-700 text-sm mb-3">🚛 Транспорт</h3>
+      {% if deal.vehicle %}
+      <dl class="space-y-1.5 text-sm">
+        <div><dt class="text-slate-400 text-xs">Тип кузова</dt>
+          <dd class="font-medium text-slate-700">{{ deal.vehicle.body_type or '—' }}</dd></div>
+        {% if deal.vehicle.capacity_tons %}
+        <div><dt class="text-slate-400 text-xs">Вантажопідйомність</dt>
+          <dd>{{ deal.vehicle.capacity_tons }} т</dd></div>
+        {% endif %}
+      </dl>
+      {% endif %}
+      {% if deal.carrier %}
+      <div class="mt-3 pt-3 border-t text-sm">
+        <dt class="text-slate-400 text-xs">Перевізник</dt>
+        <dd class="font-medium text-slate-700 mt-0.5">{{ deal.carrier.name }}</dd>
+        {% if deal.carrier.phone %}
+        <dd class="text-slate-500 text-xs mt-0.5">{{ deal.carrier.phone }}</dd>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Price card -->
+  <div class="bg-white rounded-xl border shadow-sm p-5 mb-6">
+    <h3 class="font-semibold text-slate-700 text-sm mb-3">💰 Фінанси</h3>
+    <div class="flex items-center justify-between">
+      <span class="text-slate-500 text-sm">Сума угоди</span>
+      <span class="text-2xl font-bold text-slate-800">
+        {{ deal.price_amount }} <span class="text-slate-400 text-base font-normal">{{ deal.price_currency }}</span>
+      </span>
+    </div>
+    {% if deal.our_margin and current_user.role == 'admin' %}
+    <div class="flex items-center justify-between mt-2 pt-2 border-t">
+      <span class="text-slate-400 text-xs">Наша маржа</span>
+      <span class="text-sm font-semibold text-emerald-600">{{ deal.our_margin }} {{ deal.price_currency }}</span>
+    </div>
+    {% endif %}
+    {% if deal.notes %}
+    <p class="mt-3 text-sm text-slate-500 italic">{{ deal.notes }}</p>
+    {% endif %}
+  </div>
+
+  <!-- Status action buttons -->
+  {% if next_statuses %}
+  <div class="bg-white rounded-xl border shadow-sm p-5">
+    <h3 class="font-semibold text-slate-700 text-sm mb-3">Оновити статус</h3>
+    <div class="flex flex-wrap gap-3">
+      {% for ns in next_statuses %}
+      <form method="POST" action="/deals/{{ deal.id }}/status">
+        <input type="hidden" name="new_status" value="{{ ns }}">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors
+                  {% if ns == 'cancelled' %}bg-red-500 hover:bg-red-600 text-white
+                  {% elif ns == 'delivered' %}bg-emerald-500 hover:bg-emerald-600 text-white
+                  {% else %}bg-amber-500 hover:bg-amber-600 text-white{% endif %}">
+          {% if ns == 'loaded' %}📦 Підтвердити завантаження
+          {% elif ns == 'in_transit' %}🚛 Виїхали
+          {% elif ns == 'delivered' %}✅ Доставлено
+          {% elif ns == 'invoiced' %}🧾 Виставити рахунок
+          {% elif ns == 'paid' %}💚 Позначити оплаченим
+          {% elif ns == 'cancelled' %}❌ Скасувати угоду
+          {% else %}→ {{ ns }}{% endif %}
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

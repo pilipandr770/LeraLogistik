@@ -1,0 +1,28 @@
+{# HTMX partial — rendered inside #edrpou-result or #vat-result divs #}
+{% if success %}
+<div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-sm text-emerald-800">
+  <p class="font-semibold mb-1">✅ Компанію знайдено в реєстрі</p>
+  {% if result %}
+    {% if result.legal_name %}<p><span class="text-emerald-600 font-medium">Назва:</span> {{ result.legal_name }}</p>{% endif %}
+    {% if result.director %}<p><span class="text-emerald-600 font-medium">Керівник:</span> {{ result.director }}</p>{% endif %}
+    {% if result.address %}<p><span class="text-emerald-600 font-medium">Адреса:</span> {{ result.address }}</p>{% endif %}
+    {% if result.registration_date %}<p><span class="text-emerald-600 font-medium">Дата реєстрації:</span> {{ result.registration_date }}</p>{% endif %}
+  {% endif %}
+  {% if vies %}
+    {% if vies.company_name %}<p><span class="text-emerald-600 font-medium">Компанія:</span> {{ vies.company_name }}</p>{% endif %}
+    {% if vies.company_address %}<p><span class="text-emerald-600 font-medium">Адреса:</span> {{ vies.company_address }}</p>{% endif %}
+  {% endif %}
+  <p class="text-xs text-emerald-600 mt-1">Ваш рейтинг довіри буде підвищено після реєстрації</p>
+</div>
+
+{% elif warning %}
+<div class="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+  <p class="font-semibold mb-1">⚠️ Увага</p>
+  <p>{{ warning }}</p>
+</div>
+
+{% elif error %}
+<div class="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+  <p>{{ error }}</p>
+</div>
+{% endif %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Користувачі — Адмін{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/admin/dashboard" class="text-sm text-slate-500 hover:text-amber-600">← Панель</a>
+    <h1 class="text-2xl font-bold text-slate-900">Користувачі ({{ users|length }})</h1>
+  </div>
+
+  <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+        <tr>
+          <th class="px-4 py-3 text-left">ID</th>
+          <th class="px-4 py-3 text-left">Email</th>
+          <th class="px-4 py-3 text-left">Роль</th>
+          <th class="px-4 py-3 text-left">Компанія ID</th>
+          <th class="px-4 py-3 text-left">Реєстрація</th>
+          <th class="px-4 py-3 text-left">Статус</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        {% for user in users %}
+        <tr class="hover:bg-slate-50">
+          <td class="px-4 py-3 font-mono text-slate-400">{{ user.id }}</td>
+          <td class="px-4 py-3 font-medium text-slate-700">{{ user.email }}</td>
+          <td class="px-4 py-3">
+            <span class="text-xs px-2 py-0.5 rounded-full
+              {% if user.role == 'shipper' %}bg-blue-100 text-blue-700
+              {% elif user.role == 'carrier' %}bg-emerald-100 text-emerald-700
+              {% elif user.role == 'forwarder' %}bg-purple-100 text-purple-700
+              {% elif user.role == 'admin' %}bg-red-100 text-red-700
+              {% else %}bg-slate-100 text-slate-600{% endif %}">
+              {{ user.role }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-slate-500">{{ user.company_id or '—' }}</td>
+          <td class="px-4 py-3 text-slate-500">{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+          <td class="px-4 py-3">
+            {% if user.is_active %}
+            <span class="text-emerald-600 text-xs">● Активний</span>
+            {% else %}
+            <span class="text-red-500 text-xs">● Заблокований</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

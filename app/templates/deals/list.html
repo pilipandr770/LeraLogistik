@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Мої угоди — TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-900">Угоди</h1>
+    {% if current_user.role == 'admin' %}
+    <a href="/dashboard" class="text-sm text-amber-600 hover:underline">← AI Матчер</a>
+    {% endif %}
+  </div>
+
+  {% if not deals %}
+  <div class="bg-white rounded-xl border p-12 text-center shadow-sm">
+    <p class="text-4xl mb-3">🤝</p>
+    <p class="text-slate-500 mb-2">Угод ще немає</p>
+    <p class="text-sm text-slate-400">
+      {% if current_user.role in ('shipper', 'forwarder') %}
+      Опублікуйте вантаж — після підбору транспорту тут з'явиться угода.
+      {% elif current_user.role == 'carrier' %}
+      Угоди з'являться після того, як диспетчер підбере вам вантаж.
+      {% else %}
+      Угоди з'являться після конвертації матчів на дашборді.
+      {% endif %}
+    </p>
+  </div>
+  {% else %}
+  <div class="space-y-3">
+    {% for deal in deals %}
+    {% set s = deal.status %}
+    <a href="/deals/{{ deal.id }}"
+       class="block bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow p-5">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-slate-800">
+              Угода #{{ deal.id }}
+            </span>
+            <!-- Status badge -->
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium
+              {% if s == 'booked' %}bg-blue-100 text-blue-700
+              {% elif s == 'loaded' %}bg-amber-100 text-amber-700
+              {% elif s == 'in_transit' %}bg-emerald-100 text-emerald-700 animate-pulse
+              {% elif s == 'delivered' %}bg-slate-100 text-slate-600
+              {% elif s == 'invoiced' %}bg-purple-100 text-purple-700
+              {% elif s == 'paid' %}bg-green-100 text-green-700
+              {% elif s == 'cancelled' %}bg-red-100 text-red-500
+              {% else %}bg-slate-100 text-slate-600{% endif %}">
+              {% if s == 'booked' %}📋 Заброньовано
+              {% elif s == 'loaded' %}📦 Завантажено
+              {% elif s == 'in_transit' %}🚛 В дорозі
+              {% elif s == 'delivered' %}✅ Доставлено
+              {% elif s == 'invoiced' %}🧾 Рахунок виставлено
+              {% elif s == 'paid' %}💚 Оплачено
+              {% elif s == 'cancelled' %}❌ Скасовано
+              {% else %}{{ s }}{% endif %}
+            </span>
+          </div>
+
+          {% if deal.load %}
+          <p class="text-sm text-slate-600">
+            📍 {{ deal.load.from_city or deal.load.from_country or '?' }}
+            → {{ deal.load.to_city or deal.load.to_country or '?' }}
+          </p>
+          <p class="text-xs text-slate-400 mt-1">{{ deal.load.cargo_name or '—' }}</p>
+          {% endif %}
+        </div>
+
+        <div class="text-right ml-4">
+          <p class="font-bold text-slate-800">
+            {{ deal.price_amount }} <span class="font-normal text-slate-500">{{ deal.price_currency }}</span>
+          </p>
+          {% if s == 'in_transit' %}
+          <span class="text-xs text-emerald-600 font-semibold">🗺 Відстежити →</span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

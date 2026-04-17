@@ -1,0 +1,14 @@
+{# HTMX partial — both user and assistant bubbles use this template #}
+{% if user_message %}
+<div class="flex justify-end mb-2">
+  <div class="bg-amber-100 text-amber-900 rounded-2xl rounded-br-sm px-4 py-2 max-w-xs text-sm shadow-sm">
+    {{ user_message }}
+  </div>
+</div>
+{% endif %}
+<div class="flex justify-start mb-2">
+  <div class="bg-white border border-slate-200 text-slate-700 rounded-2xl rounded-bl-sm
+              px-4 py-2 max-w-xs text-sm shadow-sm leading-relaxed">
+    {{ content }}
+  </div>
+</div>

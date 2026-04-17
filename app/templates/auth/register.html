@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block title %}Реєстрація — TruckLink{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-2xl" x-data="{ role: '{{ prefill_role }}', country: '{{ (form or {}).get('country', 'UA') }}' }">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="text-3xl font-bold text-white">
+        <span class="text-amber-400">▸</span> TruckLink
+      </a>
+      <p class="text-slate-400 mt-2 text-sm">Платформа для вантажних перевезень у Україні та ЄС</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+
+      <!-- ── Errors ── -->
+      {% if errors %}
+      <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
+        <p class="font-semibold text-red-700 mb-1">Будь ласка, виправте наступне:</p>
+        <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+          {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <h1 class="text-2xl font-bold text-slate-900 mb-6">Створити акаунт</h1>
+
+      <form method="POST" action="/auth/register" class="space-y-6">
+
+        <!-- ── Step 1: Role selection ── -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-3">
+            Ви реєструєтесь як: <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+            <!-- Shipper -->
+            <label class="relative cursor-pointer">
+              <input type="radio" name="role" value="shipper" class="sr-only peer"
+                     {% if prefill_role == 'shipper' %}checked{% endif %}
+                     x-model="role" required>
+              <div class="border-2 rounded-xl p-4 text-center transition-all
+                          border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50
+                          hover:border-slate-300">
+                <div class="text-3xl mb-2">📦</div>
+                <p class="font-semibold text-slate-800 text-sm">Заказчик</p>
+                <p class="text-xs text-slate-500 mt-1">Відправляю вантажі</p>
+              </div>
+            </label>
+
+            <!-- Carrier -->
+            <label class="relative cursor-pointer">
+              <input type="radio" name="role" value="carrier" class="sr-only peer"
+                     {% if prefill_role == 'carrier' %}checked{% endif %}
+                     x-model="role" required>
+              <div class="border-2 rounded-xl p-4 text-center transition-all
+                          border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50
+                          hover:border-slate-300">
+                <div class="text-3xl mb-2">🚛</div>
+                <p class="font-semibold text-slate-800 text-sm">Перевізник</p>
+                <p class="text-xs text-slate-500 mt-1">У мене є транспорт</p>
+              </div>
+            </label>
+
+            <!-- Forwarder -->
+            <label class="relative cursor-pointer">
+              <input type="radio" name="role" value="forwarder" class="sr-only peer"
+                     {% if prefill_role == 'forwarder' %}checked{% endif %}
+                     x-model="role" required>
+              <div class="border-2 rounded-xl p-4 text-center transition-all
+                          border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50
+                          hover:border-slate-300">
+                <div class="text-3xl mb-2">🤝</div>
+                <p class="font-semibold text-slate-800 text-sm">Експедитор</p>
+                <p class="text-xs text-slate-500 mt-1">Організую перевезення</p>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- ── Step 2: Account info ── -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Email <span class="text-red-500">*</span></label>
+            <input type="email" name="email" required autocomplete="email"
+                   value="{{ (form or {}).get('email', '') }}"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                   placeholder="you@company.com">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Телефон</label>
+            <input type="tel" name="phone" autocomplete="tel"
+                   value="{{ (form or {}).get('phone', '') }}"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                   placeholder="+380 XX XXX XX XX">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Пароль <span class="text-red-500">*</span></label>
+            <input type="password" name="password" required autocomplete="new-password" minlength="8"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                   placeholder="Мінімум 8 символів">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Повторіть пароль <span class="text-red-500">*</span></label>
+            <input type="password" name="password2" required autocomplete="new-password" minlength="8"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                   placeholder="Повторіть пароль">
+          </div>
+        </div>
+
+        <!-- ── Step 3: Company info + verification ── -->
+        <div class="border-t pt-6">
+          <h2 class="text-lg font-semibold text-slate-800 mb-4">Компанія / ФОП</h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-medium text-slate-700 mb-1">Назва компанії <span class="text-red-500">*</span></label>
+              <input type="text" name="company_name" required
+                     value="{{ (form or {}).get('company_name', '') }}"
+                     class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                            focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                     placeholder="ТОВ «Нова Транс» або ФОП Іваненко І.І.">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Країна</label>
+              <select name="country" x-model="country"
+                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                             focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+                <option value="UA">🇺🇦 Україна</option>
+                <option value="PL">🇵🇱 Польща</option>
+                <option value="DE">🇩🇪 Німеччина</option>
+                <option value="CZ">🇨🇿 Чехія</option>
+                <option value="LT">🇱🇹 Литва</option>
+                <option value="RO">🇷🇴 Румунія</option>
+                <option value="SK">🇸🇰 Словаччина</option>
+                <option value="HU">🇭🇺 Угорщина</option>
+                <option value="AT">🇦🇹 Австрія</option>
+                <option value="FR">🇫🇷 Франція</option>
+                <option value="NL">🇳🇱 Нідерланди</option>
+                <option value="BE">🇧🇪 Бельгія</option>
+                <option value="OTHER">Інша</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ЄДРПОУ (only for Ukraine) -->
+          <div x-show="country === 'UA'" class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+              ЄДРПОУ
+              <span class="text-slate-400 font-normal">(для автоматичної перевірки)</span>
+            </label>
+            <div class="flex gap-2">
+              <input type="text" name="edrpou" id="edrpou-input"
+                     value="{{ (form or {}).get('edrpou', '') }}"
+                     maxlength="10" pattern="\d{8,10}"
+                     class="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono
+                            focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                     placeholder="12345678"
+                     hx-get="/onboarding/lookup/edrpou"
+                     hx-trigger="input changed delay:600ms"
+                     hx-include="[name='edrpou']"
+                     hx-vals='{"code": event.target.value}'
+                     hx-target="#edrpou-result"
+                     hx-indicator="#edrpou-spinner">
+              <span id="edrpou-spinner" class="htmx-indicator flex items-center text-slate-400 text-sm">
+                <svg class="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Перевірка…
+              </span>
+            </div>
+            <div id="edrpou-result" class="mt-2"></div>
+          </div>
+
+          <!-- EU VAT (for EU countries) -->
+          <div x-show="country !== 'UA' && country !== 'OTHER'" class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1">
+              VAT номер ЄС
+              <span class="text-slate-400 font-normal">(перевіряється через офіційну систему VIES)</span>
+            </label>
+            <div class="flex gap-2 items-start">
+              <input type="hidden" name="vat_country" :value="country">
+              <span class="mt-2 font-mono font-bold text-slate-600 text-sm" x-text="country"></span>
+              <div class="flex-1">
+                <input type="text" name="vat_number" id="vat-input"
+                       class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono
+                              focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                       placeholder="1234567890"
+                       hx-get="/onboarding/lookup/vat"
+                       hx-trigger="input changed delay:800ms"
+                       hx-vals='js:{country: document.querySelector("[name=country]").value, number: event.target.value}'
+                       hx-target="#vat-result"
+                       hx-indicator="#vat-spinner">
+                <span id="vat-spinner" class="htmx-indicator flex items-center text-slate-400 text-sm mt-1">
+                  <svg class="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Перевірка через VIES ЄС…
+                </span>
+                <div id="vat-result" class="mt-2"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Trust info hint ── -->
+        <div class="rounded-lg bg-blue-50 border border-blue-100 p-4 text-sm text-blue-700">
+          <p class="font-semibold mb-1">🔒 Чому ми перевіряємо компанії?</p>
+          <p>Щороку в ЄС фіктивні перевезення завдають ~8 млрд € збитків. Верифікація через
+          державні реєстри захищає всіх учасників платформи від шахраїв.</p>
+        </div>
+
+        <!-- ── Submit ── -->
+        <button type="submit"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                       rounded-xl py-3 px-6 transition-colors text-sm">
+          Зареєструватись →
+        </button>
+
+      </form>
+
+      <p class="text-center text-sm text-slate-500 mt-6">
+        Вже є акаунт?
+        <a href="/auth/login" class="text-amber-600 hover:underline font-medium">Увійти</a>
+      </p>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

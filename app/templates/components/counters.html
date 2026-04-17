@@ -1,0 +1,22 @@
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-xs text-slate-500 uppercase">Нових вантажів</div>
+        <div class="text-2xl font-bold text-slate-900">{{ counters.loads_new }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-xs text-slate-500 uppercase">З матчами</div>
+        <div class="text-2xl font-bold text-amber-600">{{ counters.loads_matched }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-xs text-slate-500 uppercase">Вільні машини</div>
+        <div class="text-2xl font-bold text-slate-900">{{ counters.vehicles_available }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-xs text-slate-500 uppercase">Відкриті матчі</div>
+        <div class="text-2xl font-bold text-emerald-600">{{ counters.matches_open }}</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-xs text-slate-500 uppercase">Всього угод</div>
+        <div class="text-2xl font-bold text-slate-900">{{ counters.deals_total }}</div>
+    </div>
+</div>

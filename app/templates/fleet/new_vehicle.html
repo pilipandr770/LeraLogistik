@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Додати автомобіль · TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <div class="mb-6">
+    <a href="/fleet/" class="text-sm text-slate-500 hover:text-amber-600">← Назад до автопарку</a>
+    <h1 class="text-2xl font-bold text-slate-900 mt-2">Додати автомобіль</h1>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <form method="POST" action="/fleet/new" class="space-y-5">
+
+      {# Plate number #}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          Номерний знак <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="plate" required placeholder="AA 0000 AA"
+               class="w-full border {% if errors.plate %}border-red-400{% else %}border-slate-300{% endif %}
+                      rounded-xl px-3 py-2 text-sm focus:outline-none
+                      focus:ring-2 focus:ring-amber-400">
+        {% if errors.plate %}
+        <p class="text-xs text-red-500 mt-1">{{ errors.plate }}</p>
+        {% endif %}
+      </div>
+
+      {# Body type #}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          Тип кузова <span class="text-red-500">*</span>
+        </label>
+        <select name="body_type" required
+                class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                       bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <option value="">— Оберіть —</option>
+          <option value="tent">Тент</option>
+          <option value="refrigerator">Реф/холодильник</option>
+          <option value="flatbed">Платформа/борт</option>
+          <option value="tanker">Цистерна</option>
+          <option value="container">Контейнеровоз</option>
+          <option value="van">Мікроавтобус/фургон</option>
+          <option value="other">Інше</option>
+        </select>
+      </div>
+
+      {# Capacity #}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          Вантажопідйомність (тонн) <span class="text-red-500">*</span>
+        </label>
+        <input type="number" name="capacity_tons" required
+               min="0.1" max="100" step="0.1" placeholder="20"
+               class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-amber-400">
+      </div>
+
+      {# Traccar IMEI / device ID (optional) #}
+      <div x-data="{ hasGps: false }">
+        <label class="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer mb-1">
+          <input type="checkbox" x-model="hasGps"
+                 class="rounded border-slate-300 text-amber-500 focus:ring-amber-400">
+          GPS-трекер вже є — вказати IMEI / Device identifier
+        </label>
+        <div x-show="hasGps" x-cloak class="mt-2">
+          <input type="text" name="traccar_unique_id"
+                 placeholder="IMEI: 359123456789000  або  ID з Traccar Client"
+                 class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <p class="text-xs text-slate-400 mt-1">
+            Якщо немає трекера — залиште порожнім; прив'язати можна пізніше.
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                       py-2.5 rounded-xl text-sm transition-colors">
+          Зберегти автомобіль
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+[project]
+name = "lera-logistics"
+version = "0.1.0"
+description = "AI-powered logistics brokerage platform integrating with Lardi-Trans API"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # Web framework
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "jinja2>=3.1.4",
+    "python-multipart>=0.0.12",
+
+    # Database
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14.0",
+    "psycopg[binary]>=3.2.3",
+    "asyncpg>=0.30.0",
+
+    # HTTP client for Lardi-Trans and other APIs
+    "httpx>=0.28.0",
+
+    # Validation and settings
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+
+    # AI agent (Anthropic Claude)
+    "anthropic>=0.40.0",
+
+    # Background tasks (lightweight option without Redis for MVP)
+    "apscheduler>=3.10.4",
+
+    # Authentication
+    "passlib[bcrypt]>=1.7.4",
+    "python-jose[cryptography]>=3.3.0",
+
+    # Utilities
+    "python-dotenv>=1.0.1",
+    "tenacity>=9.0.0",      # retries for API calls
+    "structlog>=24.4.0",    # structured logging
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "httpx>=0.28.0",        # also used in tests
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ASYNC"]
+ignore = ["E501"]   # line-too-long handled by formatter
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

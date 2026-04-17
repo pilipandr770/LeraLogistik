@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Додати вантаж — TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8 px-4">
+  <div class="mb-6">
+    <a href="/loads/my" class="text-sm text-slate-500 hover:text-amber-600">← Мої вантажі</a>
+    <h1 class="text-2xl font-bold text-slate-900 mt-2">Опублікувати вантаж</h1>
+    <p class="text-slate-500 text-sm mt-1">AI-матчинг знайде відповідний транспорт автоматично</p>
+  </div>
+
+  {% if errors %}
+  <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
+    <p class="font-semibold text-red-700 mb-1">Будь ласка, виправте:</p>
+    <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+      {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="POST" action="/loads/new" class="space-y-6">
+
+    <!-- Route -->
+    <div class="bg-white rounded-xl border p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-700 mb-4">Маршрут</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Країна відправлення <span class="text-red-500">*</span></label>
+          <select name="from_country" required
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+            <option value="UA" selected>🇺🇦 Україна</option>
+            <option value="PL">🇵🇱 Польща</option>
+            <option value="DE">🇩🇪 Німеччина</option>
+            <option value="CZ">🇨🇿 Чехія</option>
+            <option value="LT">🇱🇹 Литва</option>
+            <option value="RO">🇷🇴 Румунія</option>
+            <option value="SK">🇸🇰 Словаччина</option>
+            <option value="HU">🇭🇺 Угорщина</option>
+            <option value="AT">🇦🇹 Австрія</option>
+            <option value="DE">🇩🇪 Франція</option>
+            <option value="NL">🇳🇱 Нідерланди</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Місто відправлення <span class="text-red-500">*</span></label>
+          <input type="text" name="from_city" required placeholder="Київ"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Країна доставки <span class="text-red-500">*</span></label>
+          <select name="to_country" required
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+            <option value="UA">🇺🇦 Україна</option>
+            <option value="PL">🇵🇱 Польща</option>
+            <option value="DE">🇩🇪 Німеччина</option>
+            <option value="CZ">🇨🇿 Чехія</option>
+            <option value="LT">🇱🇹 Литва</option>
+            <option value="RO">🇷🇴 Румунія</option>
+            <option value="SK">🇸🇰 Словаччина</option>
+            <option value="HU">🇭🇺 Угорщина</option>
+            <option value="AT">🇦🇹 Австрія</option>
+            <option value="NL">🇳🇱 Нідерланди</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Місто доставки <span class="text-red-500">*</span></label>
+          <input type="text" name="to_city" required placeholder="Варшава"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+      </div>
+    </div>
+
+    <!-- Cargo details -->
+    <div class="bg-white rounded-xl border p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-700 mb-4">Характеристики вантажу</h2>
+
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-slate-600 mb-1">Найменування вантажу <span class="text-red-500">*</span></label>
+        <input type="text" name="cargo_name" required placeholder="Продукти харчування / Будматеріали / Техніка"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Вага, тонн</label>
+          <input type="number" name="weight_tons" step="0.1" min="0.1" max="25"
+                 placeholder="20"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Об'єм, м³</label>
+          <input type="number" name="volume_m3" step="0.5" min="0"
+                 placeholder="82"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+      </div>
+
+      <!-- Body type checkboxes -->
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-slate-600 mb-2">Тип кузова</label>
+        <div class="flex flex-wrap gap-2">
+          {% for btype, label in [('tent', '🪢 Тент'), ('refrigerator', '❄️ Рефрижератор'),
+                                   ('isothermal', '🌡 Ізотерм'), ('open', '📦 Відкритий'),
+                                   ('container', '🏗 Контейнер'), ('tanker', '🛢 Цистерна'),
+                                   ('car_carrier', '🚗 Автовоз'), ('any', '✅ Будь-який')] %}
+          <label class="cursor-pointer">
+            <input type="checkbox" name="body_types" value="{{ btype }}" class="sr-only peer">
+            <span class="px-3 py-1.5 rounded-full border text-xs font-medium transition-all
+                         border-slate-200 text-slate-600
+                         peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700">
+              {{ label }}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="is_adr" value="1"
+                 class="w-4 h-4 rounded border-slate-300 text-amber-500
+                        focus:ring-amber-400 focus:ring-2">
+          <span class="text-sm text-slate-600">⚠️ Небезпечний вантаж (ADR)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Dates -->
+    <div class="bg-white rounded-xl border p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-700 mb-4">Дати завантаження</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">З</label>
+          <input type="date" name="pickup_date_from"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">По</label>
+          <input type="date" name="pickup_date_to"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        </div>
+      </div>
+    </div>
+
+    <!-- Price -->
+    <div class="bg-white rounded-xl border p-5 shadow-sm">
+      <h2 class="font-semibold text-slate-700 mb-4">Ставка фрахту (необов'язково)</h2>
+      <div class="flex gap-3">
+        <input type="number" name="price_amount" step="100" min="0" placeholder="15000"
+               class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+        <select name="price_currency"
+                class="rounded-lg border border-slate-300 px-3 py-2 text-sm
+                       focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent">
+          <option value="UAH">UAH</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="bg-white rounded-xl border p-5 shadow-sm">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Додаткові умови / примітки</label>
+      <textarea name="notes" rows="3" maxlength="500"
+                placeholder="Особливі умови завантаження, потрібні документи, контактна особа…"
+                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-none
+                       focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"></textarea>
+    </div>
+
+    <button type="submit"
+            class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                   rounded-xl py-3 transition-colors">
+      Опублікувати вантаж →
+    </button>
+  </form>
+</div>
+{% endblock %}

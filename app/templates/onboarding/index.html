@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Налаштування профілю — TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-12 px-4">
+
+  <!-- Header -->
+  <div class="text-center mb-10">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
+      {% if user.role == 'carrier' %}🚛
+      {% elif user.role == 'shipper' %}📦
+      {% else %}🤝{% endif %}
+    </div>
+    <h1 class="text-2xl font-bold text-slate-900">Ласкаво просимо!</h1>
+    <p class="text-slate-500 mt-1">Заповніть профіль — це займе 2 хвилини</p>
+  </div>
+
+  <!-- Trust score card -->
+  {% if company %}
+  <div class="bg-white rounded-xl border shadow-sm p-5 mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-slate-800">Рівень довіри компанії</h2>
+      <span class="text-2xl font-bold
+        {% if company.trust_score >= 65 %}text-emerald-600
+        {% elif company.trust_score >= 35 %}text-amber-600
+        {% else %}text-slate-400{% endif %}">
+        {{ company.trust_score }}/100
+      </span>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="w-full bg-slate-100 rounded-full h-2 mb-4">
+      <div class="h-2 rounded-full transition-all
+        {% if company.trust_score >= 65 %}bg-emerald-500
+        {% elif company.trust_score >= 35 %}bg-amber-500
+        {% else %}bg-slate-300{% endif %}"
+        style="width: {{ company.trust_score }}%"></div>
+    </div>
+
+    <!-- Verification checklist -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+
+      <div class="flex items-center gap-2">
+        {% if company.edrpou and company.trust_score >= 35 %}
+          <span class="text-emerald-500">✓</span>
+          <span class="text-slate-700">ЄДРПОУ підтверджено (+35)</span>
+        {% elif company.edrpou %}
+          <span class="text-amber-500">⏳</span>
+          <span class="text-slate-500">ЄДРПОУ — на перевірці</span>
+        {% else %}
+          <span class="text-slate-300">○</span>
+          <span class="text-slate-400">ЄДРПОУ не вказано</span>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-slate-300">○</span>
+        <span class="text-slate-400">Email не підтверджено (+15)</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-slate-300">○</span>
+        <span class="text-slate-400">Телефон не підтверджено (+15)</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-slate-300">○</span>
+        <span class="text-slate-400">Профіль не заповнений (+5)</span>
+      </div>
+
+    </div>
+
+    {% if company.is_verified %}
+    <div class="mt-4 flex items-center gap-2 text-emerald-700 bg-emerald-50 rounded-lg p-3 text-sm">
+      <span class="text-lg">✅</span>
+      <span>Компанія <strong>{{ company.legal_name or company.name }}</strong> верифікована</span>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Profile form -->
+  <div class="bg-white rounded-xl border shadow-sm p-6">
+    <h2 class="font-semibold text-slate-800 mb-5">Публічний профіль компанії</h2>
+
+    <form method="POST" action="/onboarding/complete" class="space-y-5">
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Короткий слоган</label>
+        <input type="text" name="tagline" maxlength="255"
+               value="{{ company.tagline or '' if company else '' }}"
+               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                      focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+               placeholder="Надійні вантажоперевезення по Україні та ЄС">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Опис діяльності</label>
+        <textarea name="description" rows="4" maxlength="2000"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none focus:border-transparent"
+                  placeholder="Розкажіть про вашу компанію: досвід, флот, напрямки роботи...">{{ company.description or '' if company else '' }}</textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Контактний телефон</label>
+          <input type="tel" name="phone"
+                 value="{{ company.phone or '' if company else '' }}"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                 placeholder="+380 XX XXX XX XX">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Сайт компанії</label>
+          <input type="url" name="website"
+                 value="{{ company.website or '' if company else '' }}"
+                 class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+                 placeholder="https://your-company.ua">
+        </div>
+      </div>
+
+      {% if company and company.slug %}
+      <div class="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm">
+        <p class="text-slate-500 mb-1">Ваша публічна сторінка буде доступна за адресою:</p>
+        <a href="/p/{{ company.slug }}" target="_blank"
+           class="font-mono text-amber-600 hover:underline">
+          trucklink.ua/p/{{ company.slug }}
+        </a>
+        <p class="text-xs text-slate-400 mt-1">Можна надсилати клієнтам і розміщувати на сайті</p>
+      </div>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                       rounded-xl py-3 transition-colors text-sm">
+          Зберегти і перейти до дашборду →
+        </button>
+        <a href="/dashboard"
+           class="px-5 py-3 text-sm text-slate-500 hover:text-slate-700 rounded-xl
+                  border border-slate-200 hover:border-slate-300 transition-colors">
+          Пропустити
+        </a>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
