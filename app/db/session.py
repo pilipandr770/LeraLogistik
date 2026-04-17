@@ -20,6 +20,10 @@ engine = create_async_engine(
     pool_pre_ping=True,        # avoid "server closed connection" after idle
     pool_size=5,
     max_overflow=10,
+    # Isolate all queries inside our schema.
+    # asyncpg passes server_settings as startup parameters (equivalent to
+    # SET search_path TO lera_logistics; for every connection).
+    connect_args={"server_settings": {"search_path": _settings.db_schema}},
 )
 
 AsyncSessionLocal = async_sessionmaker(

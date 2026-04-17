@@ -30,8 +30,13 @@ services:
         value: "false"
       - key: PYTHON_VERSION
         value: "3.12.7"
+      - key: DB_SCHEMA
+        value: lera_logistics
       # Secrets below must be set manually in the Render dashboard:
-      # - DATABASE_URL          (link to your existing Postgres)
+      # - DATABASE_URL          (link to your existing Postgres — use Internal URL)
       # - APP_SECRET_KEY        (generate: python -c "import secrets; print(secrets.token_urlsafe(48))")
+      # - JWT_SECRET_KEY        (generate another one)
       # - LARDI_API_TOKEN
       # - ANTHROPIC_API_KEY
+      # Optional:
+      # - TRACCAR_ADMIN_PASSWORD  (only if you run Traccar on a VPS)

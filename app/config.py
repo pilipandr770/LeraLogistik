@@ -34,6 +34,10 @@ class Settings(BaseSettings):
 
     # --- Database ---
     database_url: str = "postgresql+asyncpg://lera:lera@localhost:5432/lera"
+    # PostgreSQL schema to isolate this project from others in the same DB.
+    # All tables are created inside this schema (CREATE SCHEMA IF NOT EXISTS).
+    # Change this if you share a Render DB with multiple projects.
+    db_schema: str = "lera_logistics"
 
     # --- Lardi-Trans API ---
     lardi_api_token: str = ""

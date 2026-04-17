@@ -13,7 +13,7 @@ from __future__ import annotations
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 
 from app.config import get_settings
 from app.db.models import Base   # noqa: F401 — import registers all models
@@ -24,10 +24,17 @@ if config.config_file_name:
     fileConfig(config.config_file_name)
 
 _settings = get_settings()
+_schema = _settings.db_schema
 _sync_url = _settings.database_url.replace("+asyncpg", "+psycopg")
 config.set_main_option("sqlalchemy.url", _sync_url)
 
 target_metadata = Base.metadata
+
+
+def _configure_search_path(connection) -> None:
+    """Create the schema if it doesn't exist and set search_path for this session."""
+    connection.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{_schema}"'))
+    connection.execute(text(f'SET search_path TO "{_schema}"'))
 
 
 def run_migrations_offline() -> None:
@@ -37,6 +44,8 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        version_table_schema=_schema,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -49,10 +58,13 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
+        _configure_search_path(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
+            include_schemas=True,
+            version_table_schema=_schema,
         )
         with context.begin_transaction():
             context.run_migrations()
