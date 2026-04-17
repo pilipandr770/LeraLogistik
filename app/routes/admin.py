@@ -109,9 +109,9 @@ async def admin_dashboard(
     )).all()
 
     return templates.TemplateResponse(
-        "admin/dashboard.html",
-        {
-            "request": request,
+     request,
+     "admin/dashboard.html",
+     {
             "current_user": current_user,
             "total_users": total_users or 0,
             "users_by_role": users_by_role,
@@ -125,8 +125,8 @@ async def admin_dashboard(
             "recent_users": recent_users,
             "active_deals_list": active_deals_list,
             "recent_loads": recent_loads,
-        },
-    )
+     },
+ )
 
 
 @router.get("/users", response_class=HTMLResponse)
@@ -139,8 +139,9 @@ async def admin_users(
         select(User).order_by(User.created_at.desc())
     )).all()
     return templates.TemplateResponse(
+        request,
         "admin/users.html",
-        {"request": request, "current_user": current_user, "users": users},
+        {"current_user": current_user, "users": users},
     )
 
 
@@ -154,6 +155,7 @@ async def admin_companies(
         select(Company).order_by(Company.created_at.desc())
     )).all()
     return templates.TemplateResponse(
+        request,
         "admin/companies.html",
-        {"request": request, "current_user": current_user, "companies": companies},
+        {"current_user": current_user, "companies": companies},
     )

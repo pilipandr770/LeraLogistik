@@ -121,16 +121,16 @@ async def fleet_list(
     traccar_configured = bool(settings.traccar_admin_password)
 
     return templates.TemplateResponse(
-        "fleet/index.html",
-        {
-            "request": request,
+     request,
+     "fleet/index.html",
+     {
             "current_user": current_user,
             "vehicles": vehicles,
             "positions": positions,
             "traccar_configured": traccar_configured,
             "traccar_base_url": settings.traccar_base_url,
-        },
-    )
+     },
+ )
 
 
 # ---------------------------------------------------------------------------
@@ -146,8 +146,9 @@ async def fleet_new_form(
         return RedirectResponse("/onboarding", status_code=302)
 
     return templates.TemplateResponse(
+        request,
         "fleet/new_vehicle.html",
-        {"request": request, "current_user": current_user, "errors": {}},
+        {"current_user": current_user, "errors": {}},
     )
 
 
@@ -173,9 +174,9 @@ async def fleet_new_submit(
 
     if not plate:
         return templates.TemplateResponse(
-            "fleet/new_vehicle.html",
-            {
-                "request": request,
+     request,
+     "fleet/new_vehicle.html",
+     {
                 "current_user": current_user,
                 "errors": {"plate": "Обов'язкове поле"},
             },
@@ -193,8 +194,9 @@ async def fleet_new_submit(
         body_type=body_type,
         capacity_tons=capacity_tons,
         # Store plate in raw_payload for now (no dedicated column)
-        raw_payload={"plate": plate},
-    )
+        raw_payload={"plate": plate
+     },
+ )
     session.add(vehicle)
     await session.flush()  # get vehicle.id
 

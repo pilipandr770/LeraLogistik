@@ -51,8 +51,9 @@ async def new_load_form(
 ) -> HTMLResponse:
     _require_poster(user)
     return templates.TemplateResponse(
+        request,
         "loads/new.html",
-        {"request": request, "current_user": user, "errors": []},
+        {"current_user": user, "errors": []},
     )
 
 
@@ -135,9 +136,9 @@ async def new_load_submit(
 
     if errors:
         return templates.TemplateResponse(
-            "loads/new.html",
-            {
-                "request": request,
+     request,
+     "loads/new.html",
+     {
                 "current_user": user,
                 "errors": errors,
                 "form": await request.form(),
@@ -190,8 +191,9 @@ async def my_loads(
     )).all()
 
     return templates.TemplateResponse(
+        request,
         "loads/my.html",
-        {"request": request, "current_user": user, "loads": loads},
+        {"current_user": user, "loads": loads},
     )
 
 

@@ -51,13 +51,13 @@ async def onboarding_index(
         company = result.scalar_one_or_none()
 
     return templates.TemplateResponse(
-        "onboarding/index.html",
-        {
-            "request": request,
+     request,
+     "onboarding/index.html",
+     {
             "user": user,
             "company": company,
-        },
-    )
+     },
+ )
 
 
 # ---------------------------------------------------------------------------
@@ -75,8 +75,9 @@ async def lookup_edrpou(request: Request, code: str = "") -> HTMLResponse:
 
     if not code.isdigit() or not (8 <= len(code) <= 10):
         return templates.TemplateResponse(
+            request,
             "onboarding/_lookup_result.html",
-            {"request": request, "error": "ЄДРПОУ має бути 8–10 цифр"},
+            {"error": "ЄДРПОУ має бути 8–10 цифр"},
         )
 
     async with EdrpouAdapter(api_key=settings.opendatabot_api_key) as adapter:
@@ -84,33 +85,33 @@ async def lookup_edrpou(request: Request, code: str = "") -> HTMLResponse:
 
     if result is None:
         return templates.TemplateResponse(
-            "onboarding/_lookup_result.html",
-            {
-                "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
                 "warning": "Компанія не знайдена в реєстрі або API тимчасово недоступний. "
                            "Ваш акаунт буде перевірено вручну.",
-            },
-        )
+     },
+ )
 
     if not result.is_active:
         return templates.TemplateResponse(
-            "onboarding/_lookup_result.html",
-            {
-                "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
                 "warning": f"Увага: компанія «{result.legal_name}» неактивна в реєстрі "
                            f"(ліквідація або банкрутство). Будь ласка, перевірте ЄДРПОУ.",
                 "result": result,
-            },
-        )
+     },
+ )
 
     return templates.TemplateResponse(
-        "onboarding/_lookup_result.html",
-        {
-            "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
             "success": True,
             "result": result,
-        },
-    )
+     },
+ )
 
 
 @router.get("/lookup/vat", response_class=HTMLResponse)
@@ -127,31 +128,31 @@ async def lookup_vat(request: Request, country: str = "", number: str = "") -> H
 
     if result is None:
         return templates.TemplateResponse(
-            "onboarding/_lookup_result.html",
-            {
-                "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
                 "warning": "VIES API недоступний або країна не є членом ЄС. "
                            "Перевірка буде виконана вручну.",
-            },
-        )
+     },
+ )
 
     if not result.is_valid:
         return templates.TemplateResponse(
-            "onboarding/_lookup_result.html",
-            {
-                "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
                 "warning": f"VAT номер {country}{number} не знайдено або неактивний в системі VIES ЄС.",
-            },
-        )
+     },
+ )
 
     return templates.TemplateResponse(
-        "onboarding/_lookup_result.html",
-        {
-            "request": request,
+     request,
+     "onboarding/_lookup_result.html",
+     {
             "success": True,
             "vies": result,
-        },
-    )
+     },
+ )
 
 
 # ---------------------------------------------------------------------------

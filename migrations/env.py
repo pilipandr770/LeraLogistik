@@ -59,12 +59,16 @@ def run_migrations_online() -> None:
     )
     with connectable.connect() as connection:
         _configure_search_path(connection)
+        connection.commit()  # Commit schema creation before Alembic starts its own DDL transaction
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             compare_type=True,
             include_schemas=True,
             version_table_schema=_schema,
+            # Treat unqualified model tables as belonging to our schema
+            # so autogenerate doesn't flag them as "missing"
+            schema_translate_map={None: _schema},
         )
         with context.begin_transaction():
             context.run_migrations()

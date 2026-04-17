@@ -142,14 +142,14 @@ async def load_detail(
         vehicles_by_id = {v.id: v for v in result.all()}
 
     return templates.TemplateResponse(
-        "load_detail.html",
-        {
-            "request": request,
+     request,
+     "load_detail.html",
+     {
             "load": load,
             "matches": matches,
             "vehicles_by_id": vehicles_by_id,
-        },
-    )
+     },
+ )
 
 
 @router.post("/matches/{match_id}/reject")

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Дашборд відправника · TruckLink{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Welcome bar -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">
+                Доброго дня, {{ current_user.email.split('@')[0] }} 👋
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">Ваш центр управління вантажами</p>
+        </div>
+        <a href="/loads/new"
+           class="bg-amber-500 hover:bg-amber-600 text-white font-semibold
+                  px-5 py-2.5 rounded-xl shadow transition-colors text-sm">
+            + Новий вантаж
+        </a>
+    </div>
+
+    <!-- Counters -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-amber-400">
+            <div class="text-sm text-slate-500 mb-1">Активних вантажів</div>
+            <div class="text-3xl font-extrabold text-amber-600">{{ counters.my_active }}</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-emerald-400">
+            <div class="text-sm text-slate-500 mb-1">AI-матчів очікують</div>
+            <div class="text-3xl font-extrabold text-emerald-600">{{ counters.my_matches }}</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-blue-400">
+            <div class="text-sm text-slate-500 mb-1">Угод у дорозі</div>
+            <div class="text-3xl font-extrabold text-blue-600">{{ counters.my_deals }}</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-slate-300">
+            <div class="text-sm text-slate-500 mb-1">Завершено всього</div>
+            <div class="text-3xl font-extrabold text-slate-700">{{ counters.total_done }}</div>
+        </div>
+    </div>
+
+    <!-- My loads -->
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-lg">📦 Мої вантажі</h2>
+            <a href="/loads/my" class="text-sm text-amber-600 hover:text-amber-700 font-medium">Всі →</a>
+        </div>
+        {% if my_loads %}
+        <div class="space-y-3">
+        {% for load in my_loads %}
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-amber-50 transition-colors">
+                <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-sm truncate">
+                        {{ load.from_city }} ({{ load.from_country }}) → {{ load.to_city }} ({{ load.to_country }})
+                    </div>
+                    <div class="text-xs text-slate-500 mt-0.5">
+                        {{ load.cargo_name or '—' }} ·
+                        {% if load.weight_tons %}{{ load.weight_tons }} т{% endif %}
+                        {% if load.pickup_date_from %} · {{ load.pickup_date_from.strftime('%d.%m') }}{% endif %}
+                    </div>
+                </div>
+                <div class="ml-3 flex items-center gap-3">
+                    {% if load.price_amount %}
+                    <span class="text-sm font-bold text-emerald-700 whitespace-nowrap">
+                        {{ load.price_amount | int }} {{ load.price_currency }}
+                    </span>
+                    {% endif %}
+                    <span class="text-xs px-2 py-1 rounded-full font-semibold
+                        {% if load.status == 'new' %}bg-amber-100 text-amber-700
+                        {% elif load.status == 'matched' %}bg-emerald-100 text-emerald-700
+                        {% elif load.status == 'booked' %}bg-blue-100 text-blue-700
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {% if load.status == 'new' %}Нова
+                        {% elif load.status == 'matched' %}Матч знайдено
+                        {% elif load.status == 'booked' %}Заброньовано
+                        {% elif load.status == 'cancelled' %}Скасовано
+                        {% elif load.status == 'expired' %}Минула
+                        {% else %}{{ load.status }}{% endif %}
+                    </span>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-10 text-slate-400">
+            <div class="text-4xl mb-3">📭</div>
+            <p class="text-sm">Вантажів ще немає</p>
+            <a href="/loads/new"
+               class="mt-3 inline-block bg-amber-500 hover:bg-amber-600 text-white
+                      text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                Розмістити перший вантаж
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Platform marketplace preview -->
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-lg">🔍 Доступний транспорт</h2>
+            <a href="/search" class="text-sm text-amber-600 hover:text-amber-700 font-medium">Пошук →</a>
+        </div>
+        <div class="grid md:grid-cols-2 gap-3">
+        {% for v in available_vehicles %}
+            <div class="border border-slate-100 rounded-xl p-3 flex items-center gap-3 hover:border-amber-200 transition-colors">
+                <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-lg flex-shrink-0">🚛</div>
+                <div class="min-w-0 flex-1">
+                    <div class="font-semibold text-sm truncate">
+                        {{ v.from_city or v.from_country }} → {{ v.to_city or v.to_country or 'будь-куди' }}
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        {{ v.body_type or 'тент' }} · {{ v.capacity_tons or '?' }} т
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-slate-400 text-sm col-span-2 py-4 text-center">Транспорт завантажується...</p>
+        {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

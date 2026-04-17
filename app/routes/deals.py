@@ -121,14 +121,14 @@ async def deals_list(
     deals = (await session.scalars(stmt)).all()
 
     return templates.TemplateResponse(
-        "deals/list.html",
-        {
-            "request": request,
+     request,
+     "deals/list.html",
+     {
             "current_user": current_user,
             "deals": deals,
             "DealStatus": DealStatus,
-        },
-    )
+     },
+ )
 
 
 # ---------------------------------------------------------------------------
@@ -160,16 +160,16 @@ async def deal_detail(
     can_track = AccessControl.can_track_deal(current_user, deal)
 
     return templates.TemplateResponse(
-        "deals/detail.html",
-        {
-            "request": request,
+     request,
+     "deals/detail.html",
+     {
             "current_user": current_user,
             "deal": deal,
             "next_statuses": next_statuses,
             "can_track": can_track,
             "DealStatus": DealStatus,
-        },
-    )
+     },
+ )
 
 
 # ---------------------------------------------------------------------------

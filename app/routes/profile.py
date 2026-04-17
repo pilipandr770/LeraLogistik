@@ -63,15 +63,15 @@ async def company_profile(
     owner = owner_result.scalar_one_or_none()
 
     return templates.TemplateResponse(
-        "profile/company.html",
-        {
-            "request": request,
+     request,
+     "profile/company.html",
+     {
             "current_user": current_user,
             "company": company,
             "owner": owner,
             "verified_types": verified_types,
-        },
-    )
+     },
+ )
 
 
 @router.post("/{slug}/contact", response_class=HTMLResponse)
@@ -105,9 +105,9 @@ async def contact_submit(
 
     # Return a success partial (HTMX replaces the form)
     return templates.TemplateResponse(
-        "profile/_contact_success.html",
-        {
-            "request": request,
+     request,
+     "profile/_contact_success.html",
+     {
             "company": company,
-        },
-    )
+     },
+ )

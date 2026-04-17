@@ -47,8 +47,9 @@ _VALID_ROLES: set[str] = {UserRole.SHIPPER, UserRole.CARRIER, UserRole.FORWARDER
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, role: str = "") -> HTMLResponse:
     return templates.TemplateResponse(
+        request,
         "auth/register.html",
-        {"request": request, "prefill_role": role, "errors": []},
+        {"prefill_role": role, "errors": []},
     )
 
 
@@ -98,9 +99,9 @@ async def register_submit(
 
     if errors:
         return templates.TemplateResponse(
-            "auth/register.html",
-            {
-                "request": request,
+     request,
+     "auth/register.html",
+     {
                 "errors": errors,
                 "prefill_role": role,
                 "form": {
@@ -118,9 +119,9 @@ async def register_submit(
     existing_user = await session.execute(select(User).where(User.email == email))
     if existing_user.scalar_one_or_none():
         return templates.TemplateResponse(
+            request,
             "auth/register.html",
             {
-                "request": request,
                 "errors": ["Цей email вже зареєстрований. Увійдіть або скористайтеся відновленням паролю."],
                 "prefill_role": role,
                 "form": {"email": email, "company_name": company_name, "country": country},
@@ -190,8 +191,9 @@ async def register_submit(
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, next: str = "/dashboard") -> HTMLResponse:
     return templates.TemplateResponse(
+        request,
         "auth/login.html",
-        {"request": request, "next": next, "error": None},
+        {"next": next, "error": None},
     )
 
 
@@ -212,9 +214,9 @@ async def login_submit(
 
     if not user or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
+            request,
             "auth/login.html",
             {
-                "request": request,
                 "error": "Невірний email або пароль",
                 "next": next,
                 "email": email,

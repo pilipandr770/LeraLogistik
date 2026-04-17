@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Адмін-панель · TruckLink{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">🛡 Адмін-панель</h1>
+            <p class="text-slate-500 text-sm mt-1">Загальний огляд платформи TruckLink</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/admin/users"
+               class="bg-slate-800 hover:bg-slate-900 text-white font-semibold
+                      px-4 py-2 rounded-lg text-sm transition-colors">
+                👥 Користувачі
+            </a>
+            <a href="/admin/companies"
+               class="bg-slate-800 hover:bg-slate-900 text-white font-semibold
+                      px-4 py-2 rounded-lg text-sm transition-colors">
+                🏢 Компанії
+            </a>
+        </div>
+    </div>
+
+    <!-- Platform stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <div class="text-2xl font-extrabold text-amber-600">{{ stats.loads_new }}</div>
+            <div class="text-xs text-slate-500 mt-1">Нових вантажів</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <div class="text-2xl font-extrabold text-blue-600">{{ stats.vehicles_available }}</div>
+            <div class="text-xs text-slate-500 mt-1">Вільних авто</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <div class="text-2xl font-extrabold text-emerald-600">{{ stats.matches_open }}</div>
+            <div class="text-xs text-slate-500 mt-1">Активних матчів</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <div class="text-2xl font-extrabold text-violet-600">{{ stats.deals_total }}</div>
+            <div class="text-xs text-slate-500 mt-1">Угод всього</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <div class="text-2xl font-extrabold text-slate-800">{{ stats.users_total }}</div>
+            <div class="text-xs text-slate-500 mt-1">Користувачів</div>
+        </div>
+    </div>
+
+    <!-- Operations panel -->
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+        <h2 class="font-bold text-lg mb-4">⚙️ Управління платформою</h2>
+        <div class="flex flex-wrap gap-3" x-data="{ busy: false, msg: '' }">
+            <button
+                @click="busy=true; msg='AI-матчер працює...'; fetch('/ops/matcher/run', {method:'POST'}).then(r=>r.json()).then(d=>{ msg = '✅ Нових матчів: ' + d.matches_created; busy=false }).catch(()=>{msg='❌ Помилка'; busy=false})"
+                :disabled="busy"
+                class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white
+                       rounded-xl text-sm font-semibold transition-colors disabled:opacity-50">
+                🤖 Запустити AI Matcher
+            </button>
+            <button
+                @click="busy=true; msg='Pricing Agent...'; fetch('/ops/pricing/run', {method:'POST'}).then(r=>r.json()).then(d=>{ msg = '✅ Ціни: ' + d.matches_priced; busy=false }).catch(()=>{msg='❌ Помилка'; busy=false})"
+                :disabled="busy"
+                class="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white
+                       rounded-xl text-sm font-semibold transition-colors disabled:opacity-50">
+                💰 Pricing Agent
+            </button>
+            <span x-text="msg" class="self-center text-sm text-slate-600 font-medium"></span>
+        </div>
+    </div>
+
+    <!-- Two column layout: latest loads + latest users -->
+    <div class="grid lg:grid-cols-2 gap-6">
+
+        <!-- Latest loads -->
+        <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold">📦 Останні вантажі</h2>
+                <span class="text-xs text-slate-400">{{ stats.loads_new }} нових</span>
+            </div>
+            <div class="space-y-2">
+            {% for load in latest_loads %}
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div class="w-2 h-2 rounded-full flex-shrink-0
+                        {% if load.status == 'new' %}bg-amber-400
+                        {% elif load.status == 'matched' %}bg-emerald-400
+                        {% elif load.status == 'booked' %}bg-blue-400
+                        {% else %}bg-slate-300{% endif %}"></div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium truncate">
+                            {{ load.from_city or load.from_country }} → {{ load.to_city or load.to_country }}
+                        </div>
+                        <div class="text-xs text-slate-400">
+                            {{ load.cargo_name or '—' }} · {{ load.source }}
+                        </div>
+                    </div>
+                    <span class="text-xs text-slate-500 whitespace-nowrap">
+                        {{ load.created_at.strftime('%d.%m %H:%M') }}
+                    </span>
+                </div>
+            {% else %}
+                <p class="text-slate-400 text-sm py-4 text-center">Вантажів ще немає</p>
+            {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top matches -->
+        <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold">🎯 AI-матчі (ТОП)</h2>
+                <span class="text-xs text-slate-400">{{ stats.matches_open }} відкрито</span>
+            </div>
+            <div class="space-y-2">
+            {% for m in top_matches %}
+                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <span class="text-xs font-extrabold w-9 h-7 flex items-center justify-center rounded-lg
+                        {% if m.score >= 80 %}bg-emerald-100 text-emerald-800
+                        {% elif m.score >= 50 %}bg-amber-100 text-amber-800
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {{ m.score }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium">
+                            Вантаж #{{ m.load_id }} ↔ Авто #{{ m.vehicle_id }}
+                        </div>
+                        <div class="text-xs text-slate-400 truncate">{{ m.reasoning or '—' }}</div>
+                    </div>
+                    {% if m.suggested_price %}
+                    <span class="text-xs font-bold text-violet-700 whitespace-nowrap">
+                        {{ m.suggested_price | int }} {{ m.suggested_currency }}
+                    </span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-slate-400 text-sm py-4 text-center">Матчів ще немає</p>
+            {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent users -->
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold">👥 Нові користувачі</h2>
+            <a href="/admin/users" class="text-sm text-slate-600 hover:text-slate-900 font-medium">Всі →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-left text-slate-500 border-b">
+                    <tr>
+                        <th class="pb-2 font-medium">Email</th>
+                        <th class="pb-2 font-medium">Роль</th>
+                        <th class="pb-2 font-medium">Компанія</th>
+                        <th class="pb-2 font-medium">Реєстрація</th>
+                        <th class="pb-2 font-medium">Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in latest_users %}
+                    <tr class="border-b hover:bg-slate-50 transition-colors">
+                        <td class="py-2 font-medium">{{ user.email }}</td>
+                        <td class="py-2">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                                {% if user.role == 'admin' %}bg-violet-100 text-violet-700
+                                {% elif user.role == 'carrier' %}bg-blue-100 text-blue-700
+                                {% elif user.role == 'shipper' %}bg-amber-100 text-amber-700
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {% if user.role == 'admin' %}🛡 Admin
+                                {% elif user.role == 'carrier' %}🚛 Перевізник
+                                {% elif user.role == 'shipper' %}📦 Відправник
+                                {% elif user.role == 'forwarder' %}📋 Експедитор
+                                {% else %}{{ user.role }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="py-2 text-slate-600">
+                            {{ user.company.name if user.company else '—' }}
+                        </td>
+                        <td class="py-2 text-slate-500 text-xs">{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                        <td class="py-2">
+                            <span class="text-xs {% if user.is_active %}text-emerald-600{% else %}text-red-500{% endif %}">
+                                {% if user.is_active %}● Активний{% else %}○ Заблокований{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="py-4 text-center text-slate-400">Користувачів немає</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

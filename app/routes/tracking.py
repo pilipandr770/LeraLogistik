@@ -74,14 +74,14 @@ async def tracking_page(
         position = await _latest_position(deal.vehicle_id, session)
 
     return templates.TemplateResponse(
-        "tracking/deal.html",
-        {
-            "request": request,
+     request,
+     "tracking/deal.html",
+     {
             "current_user": current_user,
             "deal": deal,
             "position": position,
-        },
-    )
+     },
+ )
 
 
 @router.get("/{deal_id}/position", response_class=HTMLResponse)
@@ -100,10 +100,10 @@ async def tracking_position_partial(
         position = await _latest_position(deal.vehicle_id, session)
 
     return templates.TemplateResponse(
-        "tracking/_position_card.html",
-        {
-            "request": request,
+     request,
+     "tracking/_position_card.html",
+     {
             "deal": deal,
             "position": position,
-        },
-    )
+     },
+ )

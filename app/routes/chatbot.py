@@ -52,13 +52,13 @@ async def chat_message(
 
     if not settings.anthropic_api_key:
         return templates.TemplateResponse(
-            "chatbot/_bubble.html",
-            {
-                "request": request,
+     request,
+     "chatbot/_bubble.html",
+     {
                 "role": "assistant",
                 "content": "Вибачте, чат тимчасово недоступний.",
-            },
-        )
+     },
+ )
 
     # Load company
     result = await session.execute(select(Company).where(Company.slug == slug))
@@ -136,11 +136,11 @@ async def chat_message(
         reply = "Вибачте, сталася помилка. Спробуйте пізніше."
 
     return templates.TemplateResponse(
-        "chatbot/_bubble.html",
-        {
-            "request": request,
+     request,
+     "chatbot/_bubble.html",
+     {
             "role": "assistant",
             "content": reply,
             "user_message": user_text,
-        },
-    )
+     },
+ )

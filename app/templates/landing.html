@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruckLink — Розумна логістика для України та ЄС</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a2e 100%); }
+        .card-hover { transition: transform .2s, box-shadow .2s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }
+        .step-line::after { content:''; position:absolute; top:2rem; left:50%; width:100%; height:2px;
+            background: linear-gradient(90deg,#f59e0b,#d97706); }
+    </style>
+</head>
+<body class="bg-white text-slate-900">
+
+<!-- ── NAVBAR ─────────────────────────────────────────────────────────────── -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-xl font-extrabold tracking-tight text-slate-900">
+            <span class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-black text-sm">TL</span>
+            TruckLink
+        </a>
+        <nav class="hidden md:flex items-center gap-6 text-sm text-slate-600 font-medium">
+            <a href="#how" class="hover:text-amber-600 transition-colors">Як це працює</a>
+            <a href="#roles" class="hover:text-amber-600 transition-colors">Для кого</a>
+            <a href="#features" class="hover:text-amber-600 transition-colors">Переваги</a>
+            <a href="#demo" class="hover:text-amber-600 transition-colors">Демо</a>
+        </nav>
+        <div class="flex items-center gap-3">
+            <a href="/auth/login" class="text-sm font-medium text-slate-700 hover:text-amber-600 transition-colors">
+                Увійти
+            </a>
+            <a href="/auth/register"
+               class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold
+                      px-4 py-2 rounded-lg transition-colors shadow-sm">
+                Спробувати безкоштовно
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- ── HERO ───────────────────────────────────────────────────────────────── -->
+<section class="gradient-hero text-white py-24 px-4">
+    <div class="max-w-5xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30
+                    text-amber-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+            🚀 Запущено в 2026 · AI-логістика нового покоління
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+            Розумна платформа<br>
+            <span class="text-amber-400">вантажних перевезень</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+            TruckLink автоматично знаходить ідеальний транспорт для вашого вантажу або
+            кращий вантаж для вашого автомобіля — за лічені секунди, без дзвінків і переговорів.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="/auth/register"
+               class="bg-amber-500 hover:bg-amber-400 text-white font-bold
+                      px-8 py-3.5 rounded-xl text-base shadow-lg transition-colors">
+                Почати безкоштовно →
+            </a>
+            <a href="#demo"
+               class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold
+                      px-8 py-3.5 rounded-xl text-base transition-colors">
+                Переглянути демо
+            </a>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-10">
+            <div>
+                <div class="text-3xl font-extrabold text-amber-400">8+</div>
+                <div class="text-sm text-slate-400 mt-1">країн охоплення</div>
+            </div>
+            <div>
+                <div class="text-3xl font-extrabold text-amber-400">AI</div>
+                <div class="text-sm text-slate-400 mt-1">підбір за секунди</div>
+            </div>
+            <div>
+                <div class="text-3xl font-extrabold text-amber-400">100%</div>
+                <div class="text-sm text-slate-400 mt-1">верифікація компаній</div>
+            </div>
+            <div>
+                <div class="text-3xl font-extrabold text-amber-400">GPS</div>
+                <div class="text-sm text-slate-400 mt-1">відстеження онлайн</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── HOW IT WORKS ───────────────────────────────────────────────────────── -->
+<section id="how" class="py-20 px-4 bg-slate-50">
+    <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-extrabold mb-4">Як це працює</h2>
+            <p class="text-slate-500 max-w-xl mx-auto">
+                Від реєстрації до підтвердженого рейсу — за три кроки
+            </p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl p-6 shadow-sm card-hover text-center">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">📦</div>
+                <div class="text-amber-600 font-bold text-xs uppercase tracking-wider mb-2">Крок 1</div>
+                <h3 class="font-bold text-lg mb-2">Розмістіть вантаж або транспорт</h3>
+                <p class="text-slate-500 text-sm">
+                    Заповніть просту форму: маршрут, дата, вага, тип кузова.
+                    Жодних дзвінків — все онлайн.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm card-hover text-center">
+                <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">🤖</div>
+                <div class="text-emerald-600 font-bold text-xs uppercase tracking-wider mb-2">Крок 2</div>
+                <h3 class="font-bold text-lg mb-2">AI підбирає найкращий варіант</h3>
+                <p class="text-slate-500 text-sm">
+                    Наш алгоритм аналізує маршрут, дастність, вантажопідйомність
+                    та рейтинг — і пропонує ТОП-матчі з обґрунтуванням.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm card-hover text-center">
+                <div class="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">✅</div>
+                <div class="text-violet-600 font-bold text-xs uppercase tracking-wider mb-2">Крок 3</div>
+                <h3 class="font-bold text-lg mb-2">Підтвердьте угоду онлайн</h3>
+                <p class="text-slate-500 text-sm">
+                    Погодьте ціну, підпишіть електронні документи і відстежуйте
+                    вантаж у реальному часі через GPS.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOR WHOM ───────────────────────────────────────────────────────────── -->
+<section id="roles" class="py-20 px-4">
+    <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-extrabold mb-4">Для кого TruckLink</h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+            <!-- Shippers -->
+            <div class="border-2 border-amber-200 rounded-2xl p-6 card-hover">
+                <div class="text-3xl mb-3">🏭</div>
+                <h3 class="font-bold text-lg mb-1 text-amber-700">Вантажовідправники</h3>
+                <p class="text-slate-500 text-sm mb-4">
+                    Заводи, агровиробники, торгові компанії, інтернет-магазини
+                </p>
+                <ul class="space-y-2 text-sm text-slate-700">
+                    <li class="flex gap-2"><span class="text-amber-500">✓</span> Розмістити вантаж за 2 хвилини</li>
+                    <li class="flex gap-2"><span class="text-amber-500">✓</span> Отримати ТОП-пропозиції від перевізників</li>
+                    <li class="flex gap-2"><span class="text-amber-500">✓</span> GPS-відстеження свого вантажу</li>
+                    <li class="flex gap-2"><span class="text-amber-500">✓</span> Верифіковані перевізники (рейтинг)</li>
+                </ul>
+                <a href="/auth/register?role=shipper"
+                   class="mt-5 block text-center bg-amber-500 hover:bg-amber-600 text-white
+                          font-semibold text-sm py-2 rounded-lg transition-colors">
+                    Реєстрація для відправника →
+                </a>
+            </div>
+
+            <!-- Carriers -->
+            <div class="border-2 border-blue-200 rounded-2xl p-6 card-hover">
+                <div class="text-3xl mb-3">🚛</div>
+                <h3 class="font-bold text-lg mb-1 text-blue-700">Перевізники</h3>
+                <p class="text-slate-500 text-sm mb-4">
+                    ФОП-перевізники, транспортні компанії, автопарки
+                </p>
+                <ul class="space-y-2 text-sm text-slate-700">
+                    <li class="flex gap-2"><span class="text-blue-500">✓</span> Знайти вантаж без обзвону бірж</li>
+                    <li class="flex gap-2"><span class="text-blue-500">✓</span> AI підбирає зворотні рейси (мінус порожній пробіг)</li>
+                    <li class="flex gap-2"><span class="text-blue-500">✓</span> Управляти автопарком онлайн</li>
+                    <li class="flex gap-2"><span class="text-blue-500">✓</span> Підвищувати рейтинг і довіру</li>
+                </ul>
+                <a href="/auth/register?role=carrier"
+                   class="mt-5 block text-center bg-blue-600 hover:bg-blue-700 text-white
+                          font-semibold text-sm py-2 rounded-lg transition-colors">
+                    Реєстрація для перевізника →
+                </a>
+            </div>
+
+            <!-- Forwarders -->
+            <div class="border-2 border-violet-200 rounded-2xl p-6 card-hover">
+                <div class="text-3xl mb-3">📋</div>
+                <h3 class="font-bold text-lg mb-1 text-violet-700">Експедитори</h3>
+                <p class="text-slate-500 text-sm mb-4">
+                    Логістичні агентства, транспортні брокери, форвардери
+                </p>
+                <ul class="space-y-2 text-sm text-slate-700">
+                    <li class="flex gap-2"><span class="text-violet-500">✓</span> Єдина платформа для всіх угод</li>
+                    <li class="flex gap-2"><span class="text-violet-500">✓</span> AI-асистент для переговорів</li>
+                    <li class="flex gap-2"><span class="text-violet-500">✓</span> Автоматичні ціни та маржа</li>
+                    <li class="flex gap-2"><span class="text-violet-500">✓</span> Статистика і аналітика</li>
+                </ul>
+                <a href="/auth/register?role=forwarder"
+                   class="mt-5 block text-center bg-violet-600 hover:bg-violet-700 text-white
+                          font-semibold text-sm py-2 rounded-lg transition-colors">
+                    Реєстрація для експедитора →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────────────────────────── -->
+<section id="features" class="py-20 px-4 bg-slate-50">
+    <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-extrabold mb-4">Ключові можливості</h2>
+            <p class="text-slate-500 max-w-xl mx-auto">
+                Повний стек для сучасної логістики в одному місці
+            </p>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">🤖</div>
+                <h4 class="font-bold mb-1">AI-підбір (Matcher)</h4>
+                <p class="text-slate-500 text-sm">Автоматично знаходить найкращу пару вантаж–транспорт з рейтингом 0–100 та поясненням</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">📍</div>
+                <h4 class="font-bold mb-1">GPS-відстеження</h4>
+                <p class="text-slate-500 text-sm">Онлайн-карта позицій транспорту через Traccar — для відправника та перевізника</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">🔐</div>
+                <h4 class="font-bold mb-1">Верифікація бізнесу</h4>
+                <p class="text-slate-500 text-sm">Автоматична перевірка ЄДРПОУ та EU VAT — тільки реальні компанії на платформі</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">💬</div>
+                <h4 class="font-bold mb-1">AI-переговори</h4>
+                <p class="text-slate-500 text-sm">Асистент веде переговори з перевізниками у Telegram/Viber і пропонує оптимальні ціни</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">💰</div>
+                <h4 class="font-bold mb-1">Pricing Agent</h4>
+                <p class="text-slate-500 text-sm">Алгоритм розраховує справедливу ринкову ціну на основі маршруту, сезону та попиту</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm">
+                <div class="text-2xl mb-2">📊</div>
+                <h4 class="font-bold mb-1">Аналітика і дашборд</h4>
+                <p class="text-slate-500 text-sm">Персональний дашборд з метриками, активними угодами та рейтингом партнерів</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── DEMO CREDENTIALS ───────────────────────────────────────────────────── -->
+<section id="demo" class="py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-slate-900 text-white rounded-3xl p-10 shadow-2xl">
+            <div class="text-center mb-10">
+                <div class="inline-block bg-amber-500/20 text-amber-300 text-xs font-semibold
+                            px-3 py-1 rounded-full mb-4">🧪 Демо-режим</div>
+                <h2 class="text-3xl font-extrabold mb-3">Спробуйте прямо зараз</h2>
+                <p class="text-slate-400">Готові демо-акаунти — натисніть увійти і досліджуйте платформу</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div class="text-amber-400 font-bold text-xs uppercase tracking-wider mb-2">🏭 Відправник</div>
+                    <div class="font-mono text-sm text-slate-200 mb-1">shipper1@demo.trucklink.app</div>
+                    <div class="font-mono text-xs text-slate-400">Пароль: Demo1234!</div>
+                    <div class="mt-3">
+                        <a href="/auth/login" class="text-xs bg-amber-500 hover:bg-amber-400 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                            Увійти →
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div class="text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">🚛 Перевізник</div>
+                    <div class="font-mono text-sm text-slate-200 mb-1">carrier1@demo.trucklink.app</div>
+                    <div class="font-mono text-xs text-slate-400">Пароль: Demo1234!</div>
+                    <div class="mt-3">
+                        <a href="/auth/login" class="text-xs bg-blue-500 hover:bg-blue-400 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                            Увійти →
+                        </a>
+                    </div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div class="text-violet-400 font-bold text-xs uppercase tracking-wider mb-2">🛡 Адміністратор</div>
+                    <div class="font-mono text-sm text-slate-200 mb-1">admin@demo.trucklink.app</div>
+                    <div class="font-mono text-xs text-slate-400">Пароль: Demo1234!</div>
+                    <div class="mt-3">
+                        <a href="/auth/login" class="text-xs bg-violet-500 hover:bg-violet-400 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                            Увійти →
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-slate-500 text-xs">
+                Це тестові дані для демонстрації. Перед запуском у продакшн вони будуть видалені.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer class="bg-slate-900 text-slate-400 py-10 px-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-white font-bold">
+            <span class="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center text-xs font-black">TL</span>
+            TruckLink
+        </div>
+        <p class="text-sm text-center">© 2026 TruckLink Platform · Побудовано в Україні 🇺🇦</p>
+        <div class="flex gap-5 text-sm">
+            <a href="/auth/register" class="hover:text-white transition-colors">Реєстрація</a>
+            <a href="/auth/login" class="hover:text-white transition-colors">Вхід</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

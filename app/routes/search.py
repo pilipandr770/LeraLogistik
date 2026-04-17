@@ -88,9 +88,9 @@ async def search_carriers(
     total_pages = max(1, ((total or 0) + _PAGE_SIZE - 1) // _PAGE_SIZE)
 
     return templates.TemplateResponse(
-        "search/carriers.html",
-        {
-            "request": request,
+     request,
+     "search/carriers.html",
+     {
             "current_user": current_user,
             "companies": companies,
             "q": q,
@@ -99,5 +99,5 @@ async def search_carriers(
             "page": page,
             "total": total or 0,
             "total_pages": total_pages,
-        },
-    )
+     },
+ )
