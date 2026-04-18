@@ -193,10 +193,9 @@ async def fleet_new_submit(
         company_id=current_user.company_id,
         body_type=body_type,
         capacity_tons=capacity_tons,
-        # Store plate in raw_payload for now (no dedicated column)
-        raw_payload={"plate": plate
-     },
- )
+        plate_number=plate,
+        raw_payload={"plate": plate},
+    )
     session.add(vehicle)
     await session.flush()  # get vehicle.id
 
@@ -205,7 +204,9 @@ async def fleet_new_submit(
         try:
             account = await _get_or_create_traccar_account(current_user.company_id, session)
             company_name = (
-                current_user.company.name if current_user.company else f"company-{current_user.company_id}"
+                current_user.company.name
+                if current_user.company_id and current_user.company
+                else f"company-{current_user.company_id}"
             )
             group_id = await _ensure_traccar_group(account, company_name, session)
 
@@ -250,11 +251,13 @@ async def fleet_link_traccar(
         raise HTTPException(503, "Traccar not configured")
 
     unique_id = traccar_unique_id.strip()
-    plate = (vehicle.raw_payload or {}).get("plate", f"vehicle-{vehicle.id}")
+    plate = vehicle.plate_number or (vehicle.raw_payload or {}).get("plate", f"vehicle-{vehicle.id}")
 
     account = await _get_or_create_traccar_account(current_user.company_id, session)
     company_name = (
-        current_user.company.name if current_user.company else f"company-{current_user.company_id}"
+        current_user.company.name
+        if current_user.company_id and current_user.company
+        else f"company-{current_user.company_id}"
     )
     group_id = await _ensure_traccar_group(account, company_name, session)
 
@@ -304,5 +307,70 @@ async def fleet_delete_vehicle(
             log.warning("Failed to delete Traccar device %d", vehicle.traccar_device_id)
 
     await session.delete(vehicle)
+    await session.commit()
+    return RedirectResponse("/fleet/", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# GET /fleet/{vehicle_id}/edit — edit form
+# ---------------------------------------------------------------------------
+
+@router.get("/{vehicle_id}/edit", response_class=HTMLResponse)
+async def fleet_edit_form(
+    vehicle_id: int,
+    request: Request,
+    current_user: User = Depends(require_carrier_or_admin),
+    session: AsyncSession = Depends(get_session),
+) -> HTMLResponse:
+    vehicle = await session.get(Vehicle, vehicle_id)
+    if vehicle is None or vehicle.company_id != current_user.company_id:
+        raise HTTPException(404, "Vehicle not found")
+
+    return templates.TemplateResponse(
+        request,
+        "fleet/edit_vehicle.html",
+        {"current_user": current_user, "vehicle": vehicle, "errors": {}},
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /fleet/{vehicle_id}/edit — save changes
+# ---------------------------------------------------------------------------
+
+@router.post("/{vehicle_id}/edit")
+async def fleet_edit_submit(
+    vehicle_id: int,
+    request: Request,
+    plate: str = Form(...),
+    body_type: str = Form(...),
+    capacity_tons: float = Form(...),
+    status: str = Form(...),
+    current_user: User = Depends(require_carrier_or_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    vehicle = await session.get(Vehicle, vehicle_id)
+    if vehicle is None or vehicle.company_id != current_user.company_id:
+        raise HTTPException(404, "Vehicle not found")
+
+    plate = plate.strip().upper()
+    if not plate:
+        return templates.TemplateResponse(
+            request,
+            "fleet/edit_vehicle.html",
+            {
+                "current_user": current_user,
+                "vehicle": vehicle,
+                "errors": {"plate": "Обов'язкове поле"},
+            },
+            status_code=422,
+        )
+
+    vehicle.plate_number = plate
+    vehicle.body_type = body_type
+    vehicle.capacity_tons = capacity_tons
+    vehicle.status = status
+    # Keep raw_payload in sync for backward compatibility
+    vehicle.raw_payload = {**(vehicle.raw_payload or {}), "plate": plate}
+
     await session.commit()
     return RedirectResponse("/fleet/", status_code=303)

@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import get_settings
 from app.db.models import User
 from app.db.session import get_session
+from sqlalchemy.orm import selectinload
 
 log = logging.getLogger(__name__)
 
@@ -93,7 +94,9 @@ async def get_current_user(
     user_id = int(payload["sub"])
 
     result = await session.execute(
-        select(User).where(User.id == user_id, User.is_active == True)  # noqa: E712
+        select(User)
+        .options(selectinload(User.company))
+        .where(User.id == user_id, User.is_active == True)  # noqa: E712
     )
     user = result.scalar_one_or_none()
     if not user:
