@@ -22,6 +22,7 @@ from app.routes import tracking as tracking_routes
 from app.routes import admin as admin_routes
 from app.routes import deals as deals_routes
 from app.routes import fleet as fleet_routes
+from app.routes import vehicles as vehicles_routes
 from app.services.gps_poll import init_gps_poll_service, run_gps_poll_job
 
 logging.basicConfig(
@@ -138,6 +139,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_routes.router)
     app.include_router(deals_routes.router)
     app.include_router(fleet_routes.router)
+    app.include_router(vehicles_routes.router)
     app.include_router(dashboard.router)
     app.include_router(loads_routes.router)
 

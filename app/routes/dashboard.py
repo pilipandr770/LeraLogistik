@@ -20,6 +20,7 @@ from app.db.models import (
     UserRole,
     Vehicle,
     VehicleStatus,
+    Company,
 )
 from app.db.session import get_session
 from app.services.auth import get_optional_user
@@ -223,6 +224,7 @@ async def _shipper_dashboard(request: Request, session: AsyncSession, current_us
 
     available_vehicles = (await session.scalars(
         select(Vehicle)
+        .options(selectinload(Vehicle.company))
         .where(Vehicle.status == VehicleStatus.AVAILABLE)
         .order_by(Vehicle.created_at.desc())
         .limit(6)

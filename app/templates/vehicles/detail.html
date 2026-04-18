@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicle.plate_number or 'Транспорт' }} · TruckLink{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+  {# ── Back ────────────────────────────────────────────────────────────── #}
+  <div>
+    <a href="/dashboard" class="text-sm text-slate-500 hover:text-amber-600">← Назад до дашборду</a>
+  </div>
+
+  {# ── Vehicle card ─────────────────────────────────────────────────────── #}
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <div class="flex items-start gap-5">
+      <div class="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0">
+        🚛
+      </div>
+      <div class="flex-1 min-w-0">
+        <h1 class="text-2xl font-extrabold text-slate-900">
+          {{ vehicle.plate_number or (vehicle.raw_payload or {}).get('plate') or 'Вантажівка #' ~ vehicle.id }}
+        </h1>
+        <p class="text-slate-500 mt-1">
+          {% set bt_labels = {
+            'tent': 'Тент',
+            'refrigerator': 'Реф/холодильник',
+            'flatbed': 'Платформа/борт',
+            'tanker': 'Цистерна',
+            'container': 'Контейнеровоз',
+            'van': 'Мікроавтобус/фургон',
+            'tilt': 'Тільт',
+            'open_top': 'Відкритий верх',
+            'other': 'Інше',
+          } %}
+          {{ bt_labels.get(vehicle.body_type, vehicle.body_type or '—') }}
+          {% if vehicle.capacity_tons %} · {{ vehicle.capacity_tons }} т{% endif %}
+          {% if vehicle.capacity_m3 %} / {{ vehicle.capacity_m3 }} м³{% endif %}
+        </p>
+      </div>
+      <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
+        Вільний
+      </span>
+    </div>
+
+    {# Route & availability #}
+    <div class="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div>
+        <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Звідки</p>
+        <p class="font-semibold text-slate-800">
+          {{ vehicle.from_city or '—' }}{% if vehicle.from_country %} ({{ vehicle.from_country }}){% endif %}
+        </p>
+      </div>
+      <div>
+        <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Куди</p>
+        <p class="font-semibold text-slate-800">
+          {{ vehicle.to_city or 'будь-куди' }}{% if vehicle.to_city and vehicle.to_country %} ({{ vehicle.to_country }}){% endif %}
+        </p>
+      </div>
+      {% if vehicle.available_from %}
+      <div>
+        <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Доступний з</p>
+        <p class="font-semibold text-slate-800">{{ vehicle.available_from.strftime('%d.%m.%Y') }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Carrier company card ─────────────────────────────────────────────── #}
+  {% set company = vehicle.company %}
+  {% if company %}
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <h2 class="text-lg font-bold text-slate-900 mb-4">🏢 Перевізник</h2>
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-xl shrink-0">
+        {{ company.name[0] | upper }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-bold text-slate-900 text-lg">{{ company.name }}</span>
+          {% if company.is_verified %}
+          <span class="inline-flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700
+                       border border-blue-200 px-2 py-0.5 rounded-full">
+            ✓ Верифіковано
+          </span>
+          {% endif %}
+          {% if company.country %}
+          <span class="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            {{ company.country }}
+          </span>
+          {% endif %}
+        </div>
+
+        {% if company.tagline %}
+        <p class="text-sm text-slate-600 mt-1">{{ company.tagline }}</p>
+        {% endif %}
+
+        {% if company.description %}
+        <p class="text-sm text-slate-500 mt-2 leading-relaxed">{{ company.description }}</p>
+        {% endif %}
+
+        {# Trust score #}
+        <div class="mt-4 flex items-center gap-3">
+          <span class="text-xs text-slate-400 uppercase tracking-wide">Рейтинг надійності</span>
+          {% set score = company.trust_score or 0 %}
+          <div class="flex items-center gap-2">
+            <div class="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full rounded-full
+                          {% if score >= 75 %}bg-emerald-500
+                          {% elif score >= 50 %}bg-amber-400
+                          {% else %}bg-red-400{% endif %}"
+                   style="width: {{ score }}%"></div>
+            </div>
+            <span class="text-sm font-bold
+                         {% if score >= 75 %}text-emerald-600
+                         {% elif score >= 50 %}text-amber-600
+                         {% else %}text-red-500{% endif %}">
+              {{ score }}/100
+            </span>
+          </div>
+        </div>
+
+        {# Contacts row #}
+        <div class="mt-4 flex flex-wrap gap-3">
+          {% if company.phone %}
+          <a href="tel:{{ company.phone }}"
+             class="inline-flex items-center gap-1.5 text-sm text-slate-700
+                    bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors">
+            📞 {{ company.phone }}
+          </a>
+          {% endif %}
+          {% if company.website %}
+          <a href="{{ company.website }}" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 text-sm text-blue-600
+                    bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+            🌐 Сайт компанії
+          </a>
+          {% endif %}
+          {% if company.slug %}
+          <a href="/p/{{ company.slug }}"
+             class="inline-flex items-center gap-1.5 text-sm text-amber-700
+                    bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors">
+            👤 Профіль на TruckLink
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Propose deal / contact actions ──────────────────────────────────── #}
+  {% if current_user.role in ('shipper', 'forwarder') %}
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6" x-data="{ open: false }">
+    <h2 class="text-lg font-bold text-slate-900 mb-1">🤝 Запропонувати угоду</h2>
+    <p class="text-sm text-slate-500 mb-4">
+      Оберіть один із ваших вантажів і запропонуйте перевізнику умови.
+    </p>
+
+    {% if existing_deal %}
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+      Угода для одного з ваших вантажів уже створена.
+      <a href="/deals/{{ existing_deal.id }}" class="font-semibold underline">Переглянути угоду →</a>
+    </div>
+
+    {% elif not my_loads %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+      У вас немає активних вантажів.
+      <a href="/loads/new" class="font-semibold underline">Розмістити вантаж →</a>
+    </div>
+
+    {% else %}
+    <button @click="open = !open"
+            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white
+                   font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors">
+      + Обрати вантаж та запропонувати умови
+    </button>
+
+    <form x-show="open" x-cloak method="POST" action="/vehicles/{{ vehicle.id }}/propose"
+          class="mt-5 space-y-4 border-t border-slate-100 pt-5">
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Ваш вантаж <span class="text-red-500">*</span></label>
+        <select name="load_id" required
+                class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                       bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <option value="">— Оберіть вантаж —</option>
+          {% for load in my_loads %}
+          <option value="{{ load.id }}">
+            {{ load.from_city }} ({{ load.from_country }}) → {{ load.to_city }} ({{ load.to_country }})
+            · {{ load.cargo_name or '?' }}
+            {% if load.weight_tons %} · {{ load.weight_tons }} т{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Ціна <span class="text-red-500">*</span></label>
+          <input type="number" name="price_amount" required min="1" step="0.01"
+                 placeholder="напр. 1500"
+                 class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                        focus:outline-none focus:ring-2 focus:ring-amber-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Валюта</label>
+          <select name="price_currency"
+                  class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                         bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="PLN">PLN</option>
+            <option value="UAH">UAH</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Коментар (необов'язково)</label>
+        <textarea name="notes" rows="2" placeholder="Умови навантаження, побажання..."
+                  class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"></textarea>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold
+                     py-2.5 rounded-xl text-sm transition-colors">
+        Підтвердити угоду
+      </button>
+    </form>
+    {% endif %}
+
+    {% if company and company.slug %}
+    <div class="mt-4 pt-4 border-t border-slate-100">
+      <a href="/p/{{ company.slug }}"
+         class="inline-flex items-center gap-2 border border-slate-300 hover:border-amber-400
+                text-slate-700 font-medium px-4 py-2 rounded-xl text-sm transition-colors">
+        💬 Написати перевізнику
+      </a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

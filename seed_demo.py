@@ -60,10 +60,67 @@ SHIPPERS = [
 ]
 
 CARRIERS = [
-    {"name": "Перевозчик Плюс",   "country": "UA", "slug": "pereveznyk-plus",   "email": "carrier1@demo.trucklink.app"},
-    {"name": "Trans-EU Sp. z o.o", "country": "PL", "slug": "transeu",           "email": "carrier2@demo.trucklink.app"},
-    {"name": "Степ Авто",         "country": "UA", "slug": "step-avto",         "email": "carrier3@demo.trucklink.app"},
-    {"name": "LogiTruck DE",       "country": "DE", "slug": "logitruck-de",      "email": "carrier4@demo.trucklink.app"},
+    {
+        "name": "Перевозчик Плюс",
+        "country": "UA",
+        "slug": "pereveznyk-plus",
+        "email": "carrier1@demo.trucklink.app",
+        "phone": "+380631234567",
+        "website": "https://pereveznyk.demo.ua",
+        "tagline": "Надійні перевезення по Україні та ЄС",
+        "description": (
+            "Перевозчик Плюс — українська транспортна компанія з 10-річним досвідом "
+            "міжнародних перевезень. Парк із 25 вантажівок, спеціалізація: тент, реф, "
+            "негабаритні вантажі. Регулярні рейси Україна–Польща–Німеччина. "
+            "Всі водії з дозволами ADR, страхування CMR."
+        ),
+        "plates": ["AA 1234 AB", "AA 5678 CD", "KA 9012 EF"],
+    },
+    {
+        "name": "Trans-EU Sp. z o.o",
+        "country": "PL",
+        "slug": "transeu",
+        "email": "carrier2@demo.trucklink.app",
+        "phone": "+48501234567",
+        "website": "https://transeu.demo.pl",
+        "tagline": "Ваш партнер у логістиці Центральної Європи",
+        "description": (
+            "Trans-EU — польський перевізник з флотом 40 тягачів і рефрижераторів. "
+            "Покриваємо маршрути PL–DE–FR–NL–CZ–SK. Температурний контроль від -25°C. "
+            "Сертифікати ISO 9001, HACCP для харчових вантажів."
+        ),
+        "plates": ["WA 1111 B", "KR 2222 C", "WA 3333 D"],
+    },
+    {
+        "name": "Степ Авто",
+        "country": "UA",
+        "slug": "step-avto",
+        "email": "carrier3@demo.trucklink.app",
+        "phone": "+380672345678",
+        "website": "https://stepavto.demo.ua",
+        "tagline": "Перевезення зернових та агропродукції",
+        "description": (
+            "Степ Авто спеціалізується на перевезенні агропродукції: зернових, олій, "
+            "добрив. Парк: 15 зерновозів, 10 тентів, 5 цистерн. "
+            "Власні ваги та фітосанітарний контроль. Регіони: Дніпро, Запоріжжя, Херсон → EU."
+        ),
+        "plates": ["AE 4444 GH", "AE 5555 IJ", "ZP 6666 KL"],
+    },
+    {
+        "name": "LogiTruck DE",
+        "country": "DE",
+        "slug": "logitruck-de",
+        "email": "carrier4@demo.trucklink.app",
+        "phone": "+4930987654",
+        "website": "https://logitruck.demo.de",
+        "tagline": "Next-day logistics across Western Europe",
+        "description": (
+            "LogiTruck DE is a German carrier specializing in just-in-time deliveries "
+            "for automotive and manufacturing industries. Fleet of 60 mega-trucks, "
+            "real-time GPS tracking. Routes: DE–FR–IT–ES–PL. Partner of DB Schenker network."
+        ),
+        "plates": ["B AB 1234", "M CD 5678", "HH EF 9012"],
+    },
 ]
 
 FORWARDERS = [
@@ -154,11 +211,19 @@ async def seed(session: AsyncSession) -> None:
     # ── 3. Carrier companies + users + vehicles ────────────────────────────────
     carrier_companies: list[Company] = []
     for idx, c_data in enumerate(CARRIERS):
-        if not (await session.scalar(select(User).where(User.email == c_data["email"]))):
-            c = Company(name=c_data["name"], country=c_data["country"], slug=c_data["slug"],
-                        trust_score=random.randint(65, 90), is_verified=True,
-                        tagline="Надійні перевезення по Україні та ЄС",
-                        phone=f"+48{random.randint(100000000,999999999)}")
+        existing_user = await session.scalar(select(User).where(User.email == c_data["email"]))
+        if not existing_user:
+            c = Company(
+                name=c_data["name"],
+                country=c_data["country"],
+                slug=c_data["slug"],
+                trust_score=random.randint(78, 95),
+                is_verified=True,
+                tagline=c_data.get("tagline", "Надійні перевезення по Україні та ЄС"),
+                description=c_data.get("description"),
+                phone=c_data.get("phone"),
+                website=c_data.get("website"),
+            )
             session.add(c)
             await session.flush()
 
@@ -172,10 +237,13 @@ async def seed(session: AsyncSession) -> None:
             await session.flush()
 
             # 2-3 vehicles per carrier
-            for v_idx in range(random.randint(2, 3)):
+            plates = c_data.get("plates", [])
+            n_vehicles = max(len(plates), random.randint(2, 3))
+            for v_idx in range(n_vehicles):
                 body = random.choice(BODY_TYPES)
                 fr_country = c_data["country"]
                 fr_city = random.choice(["Київ", "Варшава", "Берлін", "Братислава", "Відень"])
+                plate = plates[v_idx] if v_idx < len(plates) else None
                 session.add(Vehicle(
                     source="platform",
                     status=VehicleStatus.AVAILABLE,
@@ -188,6 +256,8 @@ async def seed(session: AsyncSession) -> None:
                     body_type=body,
                     capacity_tons=random.choice([10.0, 20.0, 22.0, 25.0]),
                     capacity_m3=random.choice([50.0, 82.0, 92.0, 96.0]),
+                    plate_number=plate,
+                    raw_payload={"plate": plate} if plate else {},
                     available_from=_now() + _days(random.randint(0, 3)),
                     available_to=_now() + _days(random.randint(4, 14)),
                 ))
@@ -207,6 +277,27 @@ async def seed(session: AsyncSession) -> None:
             u = result.scalar_one()
             if u.company_id:
                 c = await session.get(Company, u.company_id)
+                # Update with richer data if missing
+                if not c.description:
+                    c.description = c_data.get("description")
+                if not c.website:
+                    c.website = c_data.get("website")
+                if not c.phone and c_data.get("phone"):
+                    c.phone = c_data.get("phone")
+                if c_data.get("tagline"):
+                    c.tagline = c_data.get("tagline")
+                # Update vehicles without plate_number
+                veh_result = await session.scalars(
+                    select(Vehicle).where(
+                        Vehicle.company_id == c.id,
+                        Vehicle.plate_number.is_(None),
+                    )
+                )
+                plates = c_data.get("plates", [])
+                for i, v in enumerate(veh_result.all()):
+                    if i < len(plates):
+                        v.plate_number = plates[i]
+                        v.raw_payload = {**(v.raw_payload or {}), "plate": plates[i]}
                 carrier_companies.append(c)
 
     # ── 4. Forwarder companies + users ─────────────────────────────────────────
