@@ -77,7 +77,7 @@ async def chat_message(
         "shipper": "компанія-відправник вантажів",
         "forwarder": "експедиторська компанія",
     }
-    company_role = role_label.get("carrier", "логістична компанія")  # default
+    company_role = role_label.get(company.role, "логістична компанія")
 
     verification_note = (
         "Компанія верифікована через державні реєстри на платформі TruckLink."
